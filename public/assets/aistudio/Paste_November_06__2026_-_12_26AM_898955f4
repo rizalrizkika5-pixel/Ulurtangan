@@ -1,0 +1,1479 @@
+MASTER PROMPT GOOGLE AI STUDIO
+
+ULURTANGAN OS — FOUNDATION MANAGEMENT SYSTEM
+
+Yayasan Indonesia Uluran Tangan
+
+---
+
+A. PERINTAH UTAMA
+
+Bertindaklah sebagai Senior Full-Stack Developer, Software Architect, UI/UX Designer, Firebase Engineer, Database Architect, dan Business Process Automation Specialist.
+
+Bangun aplikasi web full-stack bernama:
+
+ULURTANGAN OS — Foundation Management & Charity Operations System
+
+Aplikasi ini merupakan sistem manajemen operasional terpadu untuk Yayasan Indonesia Uluran Tangan (YIUT).
+
+Aplikasi harus benar-benar berfungsi, terhubung dengan Firebase, memiliki autentikasi, database, pengaturan hak akses, manajemen tugas, sistem prioritas, pengingat, manajemen campaign, fundraising, CRM donatur, pelaksanaan program, serta laporan kinerja.
+
+Jangan hanya membuat mockup, landing page, atau dashboard statis.
+
+Bangun aplikasi dengan struktur kode yang rapi, modular, aman, responsif, dan mudah dikembangkan.
+
+Tujuan utama aplikasi:
+
+Menciptakan sistem kerja yayasan yang dapat berjalan secara mandiri tanpa pimpinan harus terus-menerus memberikan instruksi kepada karyawan.
+
+Setiap karyawan harus dapat:
+
+1. Login ke akun masing-masing.
+2. Melihat pekerjaan yang menjadi tanggung jawabnya.
+3. Mengetahui pekerjaan paling prioritas.
+4. Mengetahui deadline.
+5. Mendapat pengingat pekerjaan.
+6. Mengetahui pekerjaan yang terlambat.
+7. Memperbarui progres pekerjaan.
+8. Mengunggah bukti pekerjaan.
+9. Melihat hasil evaluasi kinerjanya.
+
+Pimpinan dapat mengawasi seluruh aktivitas melalui satu dashboard.
+
+---
+
+B. IDENTITAS DAN KARAKTER APLIKASI
+
+Nama aplikasi: ULURTANGAN OS
+
+Nama organisasi: Yayasan Indonesia Uluran Tangan.
+
+Tagline:
+
+"Bergerak dengan Sistem, Melayani dengan Amanah."
+
+Karakter aplikasi:
+
+- Profesional.
+- Modern.
+- Humanis.
+- Minimalis.
+- Mudah digunakan.
+- Tidak rumit.
+- Mengutamakan produktivitas.
+- Mengutamakan akuntabilitas dana sosial.
+
+Bahasa aplikasi: Bahasa Indonesia.
+
+Format tanggal: DD MMMM YYYY.
+
+Format mata uang: Rupiah (IDR).
+
+Zona waktu: Asia/Jakarta.
+
+Desain:
+
+- Primary color: Dark Green #173D32.
+- Secondary color: Green #245D49.
+- Background: #F4F7F5.
+- White.
+- Accent: Gold.
+- Danger: Red.
+- Warning: Orange.
+- Success: Green.
+
+Gunakan ikon Lucide.
+
+Gunakan desain dashboard profesional dengan sidebar, topbar, kartu statistik, tabel, grafik, modal, filter, dan notifikasi.
+
+Desain harus nyaman digunakan di:
+
+- Desktop.
+- Laptop.
+- Tablet.
+- Smartphone.
+
+Buat sidebar yang dapat diperkecil dan navigasi mobile yang nyaman.
+
+---
+
+C. TEKNOLOGI WAJIB
+
+Gunakan teknologi berikut:
+
+Frontend:
+
+- React.
+- TypeScript.
+- Vite.
+- Tailwind CSS atau CSS modular.
+- Lucide React.
+
+Backend:
+
+- Firebase Authentication.
+- Cloud Firestore.
+- Firebase Security Rules.
+- Firebase Hosting.
+
+Target biaya:
+
+- Gunakan Firebase Spark Plan (gratis) selama memungkinkan.
+- Hindari layanan berbayar.
+- Jangan mengaktifkan billing otomatis tanpa persetujuan pengguna.
+- Hindari layanan backend yang membutuhkan Blaze Plan pada versi awal.
+- Jelaskan apabila suatu fitur membutuhkan layanan berbayar.
+
+Google Workspace:
+
+- Google Drive sebagai tempat penyimpanan dokumen.
+- Google Docs untuk SOP dan dokumen.
+- Google Sheets untuk ekspor laporan.
+- Integrasi langsung dengan Google Drive API dapat dibuat pada pengembangan lanjutan setelah OAuth dikonfigurasi.
+
+Gunakan Firebase modular SDK terbaru yang kompatibel.
+
+Jangan menaruh Firebase Admin SDK, private key, secret, atau kredensial sensitif dalam frontend.
+
+---
+
+D. SISTEM AUTENTIKASI DAN LOGIN
+
+1. Halaman login
+
+Halaman pertama yang ditampilkan harus berupa halaman login.
+
+Jangan tampilkan dashboard sebelum pengguna berhasil login.
+
+Tidak boleh ada registrasi publik.
+
+Tampilan login:
+
+- Logo/identitas ULURTANGAN OS.
+- Nama Yayasan Indonesia Uluran Tangan.
+- Input username.
+- Input password.
+- Tombol masuk.
+- Pesan kesalahan jika login gagal.
+- Fitur tampilkan/sembunyikan password.
+
+2. Sistem username dan password
+
+Pengguna menggunakan username dan password masing-masing.
+
+Firebase Authentication secara native menggunakan email/password. Implementasikan username sebagai identitas login dengan alias email internal yang konsisten.
+
+Contoh:
+Username: ulurtangan
+
+Alias internal:
+ulurtangan@akun.yiut.invalid
+
+Alias tersebut hanya digunakan untuk autentikasi, bukan alamat email sungguhan.
+
+Ketentuan:
+
+- Username unik.
+- Tidak boleh ada username ganda.
+- Username dinormalisasi menjadi huruf kecil.
+- Password tidak boleh disimpan dalam Firestore.
+- Password tidak boleh di-hardcode.
+- Password minimal 12 karakter untuk akun baru.
+- Sediakan mekanisme perubahan password.
+- Akun yang dinonaktifkan tidak dapat masuk.
+
+3. Super Admin pertama
+
+Buat mekanisme bootstrap Super Admin pertama melalui Firebase Console atau proses administrasi yang aman.
+
+Username yang diinginkan:
+ulurtangan
+
+Jangan otomatis membuat akun Super Admin melalui kode frontend publik.
+
+Jangan menggunakan password 123 sebagai password permanen atau menanamkannya di source code.
+
+Super Admin pertama harus memiliki mekanisme mengganti password sementara pada login pertama.
+
+Jangan menyediakan tombol registrasi Super Admin.
+
+4. Manajemen akun
+
+Super Admin dapat:
+
+- Membuat akun baru.
+- Menentukan username.
+- Menentukan nama lengkap.
+- Menentukan jabatan.
+- Menentukan role.
+- Mengaktifkan akun.
+- Menonaktifkan akun.
+- Mengubah role.
+- Mengubah data profil.
+- Melihat aktivitas akun.
+- Melakukan reset atau prosedur pemulihan akun.
+
+Buat akun melalui Firebase Authentication dengan aplikasi autentikasi sekunder agar sesi Super Admin tidak terputus.
+
+Pastikan proses pembuatan akun dan profil pengguna konsisten. Jika salah satu proses gagal, tampilkan status kegagalan dan sediakan mekanisme pemulihan.
+
+Jangan pernah membiarkan pengguna membuat akun Super Admin sendiri.
+
+---
+
+E. ROLE DAN HAK AKSES
+
+Buat sistem Role Based Access Control (RBAC).
+
+Role utama:
+
+1. SUPER ADMIN
+2. PIMPINAN
+3. KOORDINATOR OPERASIONAL
+4. DIVISI PROGRAM
+5. DIVISI FUNDRAISING
+6. KONTEN KREATOR VIDEO
+7. MEDIA SOSIAL & WEBSITE
+8. ADMIN CRM
+9. KARYAWAN / RELAWAN
+
+Super Admin memiliki hak akses penuh.
+
+Super Admin dapat mengatur semua role dan permission.
+
+Jangan hanya mengandalkan penyembunyian tombol di frontend. Semua hak akses harus diperiksa melalui Firebase Security Rules dan backend tepercaya jika dibutuhkan.
+
+Hak akses SUPER ADMIN
+
+- Akses semua halaman.
+- Melihat semua pekerjaan.
+- Membuat dan menghapus tugas.
+- Mengubah penugasan.
+- Membuat campaign.
+- Menyetujui campaign.
+- Mengatur seluruh anggaran sesuai kewenangan.
+- Mengelola semua pengguna.
+- Mengubah role.
+- Mengatur prioritas.
+- Mengakses laporan.
+- Mengakses CRM.
+- Melihat log aktivitas.
+- Mengatur sistem.
+- Mengarsipkan data.
+- Mengatur notifikasi.
+
+Hak akses PIMPINAN
+
+- Melihat semua dashboard.
+- Memantau seluruh divisi.
+- Melihat seluruh campaign.
+- Menyetujui pekerjaan dan anggaran sesuai delegasi.
+- Melihat laporan.
+- Mengevaluasi karyawan.
+- Memberikan keputusan strategis.
+
+Hak akses KOORDINATOR OPERASIONAL
+
+- Membagi tugas.
+- Menentukan prioritas.
+- Memantau deadline.
+- Menangani kendala.
+- Memantau seluruh pekerjaan operasional.
+- Membuat laporan mingguan.
+
+Hak akses DIVISI PROGRAM
+
+- Membuat assessment.
+- Mengelola penerima manfaat.
+- Membuat rencana kegiatan.
+- Mengelola implementasi.
+- Membuat laporan kegiatan.
+- Mengunggah dokumentasi.
+- Mengelola mitra lapangan.
+
+Hak akses FUNDRAISING
+
+- Membuat rencana campaign.
+- Menentukan target penghimpunan.
+- Mengelola strategi fundraising.
+- Memantau pencapaian dana.
+- Mengelola komunikasi donatur sesuai izin.
+- Membuat evaluasi fundraising.
+
+Hak akses KONTEN
+
+- Mengelola kalender konten.
+- Membuat brief.
+- Mengunggah video.
+- Mengelola desain.
+- Mengelola dokumentasi.
+- Mengelola publikasi.
+
+Hak akses ADMIN CRM
+
+- Mengelola database donatur.
+- Mencatat donasi.
+- Memverifikasi administrasi transaksi.
+- Mengelola ucapan terima kasih.
+- Membuat laporan donatur.
+- Mengelola administrasi data.
+
+Jaga pemisahan fungsi pencatatan, pemeriksaan, dan persetujuan transaksi.
+
+Hak akses KARYAWAN / RELAWAN
+
+- Melihat tugas sendiri.
+- Melihat deadline.
+- Memperbarui progres.
+- Menambahkan catatan.
+- Mengunggah bukti.
+- Melihat notifikasi.
+- Tidak dapat mengubah role.
+- Tidak dapat mengubah tugas milik orang lain.
+
+Semua role dapat disesuaikan oleh Super Admin.
+
+---
+
+F. DASHBOARD UTAMA
+
+Setelah berhasil login, tampilkan dashboard berdasarkan role pengguna.
+
+Dashboard Super Admin
+
+Tampilkan:
+
+Kartu statistik:
+
+- Total karyawan aktif.
+- Total tugas.
+- Tugas belum dikerjakan.
+- Tugas sedang berjalan.
+- Tugas selesai.
+- Tugas terlambat.
+- Tugas prioritas tinggi.
+- Total campaign aktif.
+- Total fundraising.
+- Target fundraising.
+- Total penerima manfaat.
+
+Grafik:
+
+- Produktivitas karyawan.
+- Penyelesaian tugas mingguan.
+- Campaign aktif.
+- Perkembangan fundraising.
+- Performa program.
+- Jumlah implementasi bulanan.
+
+Buat bagian khusus:
+
+"PERLU TINDAKAN PIMPINAN"
+
+Isinya:
+
+- Pekerjaan yang terlambat.
+- Pekerjaan kritis.
+- Campaign yang terhambat.
+- Persetujuan yang menunggu.
+- Kendala yang belum terselesaikan.
+- Laporan yang belum dibuat.
+- Transaksi yang perlu pemeriksaan.
+
+Dashboard harus mengambil data langsung dari Firestore.
+
+Jangan menggunakan angka statistik palsu.
+
+Jika belum ada data, tampilkan nilai 0 dan empty state yang informatif.
+
+Dashboard Karyawan
+
+Setiap karyawan melihat:
+
+- Selamat datang berdasarkan nama.
+- Tugas hari ini.
+- Tugas prioritas tinggi.
+- Deadline terdekat.
+- Tugas terlambat.
+- Tugas yang sedang dikerjakan.
+- Tugas yang menunggu persetujuan.
+- Tugas selesai.
+- Notifikasi baru.
+- Kalender pekerjaan.
+
+Tampilkan pekerjaan paling penting di bagian paling atas.
+
+---
+
+G. TASK MANAGEMENT SYSTEM
+
+Ini merupakan fitur paling penting dalam aplikasi.
+
+Buat sistem manajemen tugas yang lengkap.
+
+1. Membuat tugas
+
+Setiap tugas mempunyai:
+
+- ID tugas otomatis.
+- Judul tugas.
+- Deskripsi.
+- Divisi.
+- Campaign terkait.
+- PIC utama.
+- Anggota pendukung.
+- Pembuat tugas.
+- Tanggal dibuat.
+- Tanggal mulai.
+- Deadline.
+- Prioritas.
+- Status.
+- Lampiran.
+- Link dokumen.
+- Bukti pekerjaan.
+- Catatan.
+- Persetujuan.
+- Riwayat perubahan.
+
+2. Prioritas tugas
+
+Buat empat tingkatan:
+
+RENDAH:
+Pekerjaan rutin yang tidak mendesak.
+
+NORMAL:
+Pekerjaan reguler sesuai jadwal.
+
+TINGGI:
+Pekerjaan penting yang harus diselesaikan segera.
+
+KRITIS:
+Pekerjaan yang berdampak besar jika terlambat.
+
+Urutan pengerjaan otomatis:
+
+1. Kritis.
+2. Tinggi.
+3. Normal.
+4. Rendah.
+
+Jika dua tugas memiliki prioritas sama, dahulukan deadline yang lebih dekat.
+
+3. Warna status deadline
+
+Gunakan aturan:
+
+- Deadline lebih dari 3 hari: normal.
+- Deadline 3 hari lagi: kuning.
+- Deadline 2 hari lagi: kuning.
+- Deadline 1 hari lagi: oranye.
+- Deadline hari ini: merah muda.
+- Sudah melewati deadline: merah.
+- Selesai: hijau.
+- Dibatalkan: abu-abu.
+
+Tugas yang sudah selesai tidak boleh berstatus terlambat.
+
+Hitung deadline berdasarkan tanggal lokal Asia/Jakarta.
+
+Jangan hanya mengandalkan warna. Tampilkan juga label teks yang jelas.
+
+4. Status tugas
+
+Gunakan status:
+
+- BACKLOG.
+- SIAP DIKERJAKAN.
+- BERJALAN.
+- MENUNGGU PERSETUJUAN.
+- TERHAMBAT.
+- SELESAI.
+- DIBATALKAN.
+
+Buat kanban board:
+
+- Belum dikerjakan.
+- Siap dikerjakan.
+- Sedang berjalan.
+- Menunggu persetujuan.
+- Terhambat.
+- Selesai.
+
+Sediakan tampilan tabel dan kalender.
+
+5. Pengingat otomatis dalam aplikasi
+
+Buat pusat notifikasi internal.
+
+Aturan:
+
+- 3 hari sebelum deadline.
+- 2 hari sebelum deadline.
+- 1 hari sebelum deadline.
+- Pada hari deadline.
+- Setelah melewati deadline.
+
+Notifikasi ditampilkan di:
+
+- Ikon lonceng.
+- Dashboard.
+- Halaman notifikasi.
+- Detail tugas.
+
+Buat indikator jumlah notifikasi belum dibaca.
+
+Notifikasi harus terhubung dengan UID pengguna.
+
+Setiap pengguna hanya dapat melihat notifikasi miliknya.
+
+Jangan mengirim email atau WhatsApp.
+
+Penting: sistem pengingat versi gratis ini harus jujur mengenai keterbatasan eksekusi saat aplikasi tertutup. Implementasikan evaluasi deadline saat aplikasi dibuka dan saat aplikasi aktif. Untuk pengingat yang dijalankan saat aplikasi tertutup, siapkan arsitektur pengembangan lanjutan menggunakan backend terjadwal atau push notification. Jangan mengklaim fitur tersebut sudah aktif jika belum diimplementasikan.
+
+Hindari membuat notifikasi ganda setiap kali halaman di-refresh.
+
+Gunakan ID notifikasi unik atau mekanisme deduplikasi.
+
+---
+
+H. OTOMATISASI ALUR KERJA
+
+Buat workflow berbasis trigger.
+
+Contoh:
+
+1. Tugas dibuat → PIC menerima notifikasi.
+2. Tugas diberikan → masuk ke dashboard PIC.
+3. Deadline mendekat → notifikasi muncul.
+4. Deadline lewat → status visual menjadi merah.
+5. Tugas selesai → dashboard diperbarui.
+6. Assessment selesai → tugas penyusunan proposal dibuat.
+7. Proposal disetujui → tugas fundraising dibuat.
+8. Campaign diluncurkan → tugas konten dibuat.
+9. Donasi masuk → tugas pencatatan CRM dibuat.
+10. Implementasi selesai → tugas dokumentasi dan laporan dibuat.
+11. Laporan lengkap → campaign dapat masuk evaluasi.
+
+Setiap trigger harus memiliki:
+
+- Kondisi.
+- Tindakan.
+- PIC.
+- Waktu.
+- Status.
+- Riwayat.
+
+Jangan membuat trigger yang menyebabkan loop atau notifikasi berulang.
+
+Setiap perubahan penting harus tercatat di audit log.
+
+---
+
+I. PROGRAM UTAMA YAYASAN
+
+Buat 9 kategori program utama:
+
+1. ZAKAT
+2. PENDIDIKAN
+3. KESEHATAN
+4. PANGAN
+5. AIR BERSIH
+6. PEMBERDAYAAN
+7. EMERGENCY
+8. RAMADHAN
+9. QURBAN
+
+Masing-masing program memiliki halaman tersendiri.
+
+Tampilkan:
+
+- Deskripsi.
+- Tujuan.
+- Campaign aktif.
+- Campaign selesai.
+- Target penerima manfaat.
+- Total dana.
+- Implementasi.
+- Laporan.
+- Dokumentasi.
+
+Program adalah kategori utama.
+
+Campaign adalah kegiatan spesifik di bawah program.
+
+Satu program dapat mempunyai banyak campaign.
+
+---
+
+J. CAMPAIGN MANAGEMENT
+
+Setiap campaign mempunyai:
+
+- ID campaign otomatis.
+- Nama campaign.
+- Program utama.
+- Deskripsi.
+- Latar belakang.
+- Lokasi.
+- Tujuan.
+- Target penerima manfaat.
+- PIC Program.
+- PIC Fundraising.
+- Target dana.
+- Dana terkumpul.
+- Anggaran.
+- Tanggal mulai.
+- Deadline.
+- Status.
+- Proposal.
+- Dokumentasi.
+- Laporan.
+
+Status campaign:
+
+- Ide.
+- Assessment.
+- Persetujuan.
+- Persiapan Fundraising.
+- Fundraising.
+- Siap Implementasi.
+- Implementasi.
+- Pelaporan.
+- Evaluasi.
+- Selesai.
+- Dibatalkan.
+
+Buat detail campaign dengan tab:
+
+1. Overview.
+2. Assessment.
+3. Proposal.
+4. Fundraising.
+5. Konten.
+6. Implementasi.
+7. Anggaran.
+8. Dokumentasi.
+9. Laporan.
+10. Evaluasi.
+
+Setiap campaign wajib mempunyai PIC, target, timeline dan anggaran.
+
+Campaign tidak boleh dipublikasikan sebelum memperoleh persetujuan yang diperlukan.
+
+---
+
+K. ASSESSMENT MANAGEMENT
+
+Buat sistem assessment penerima manfaat.
+
+Data:
+
+- ID assessment.
+- Tanggal assessment.
+- Nama assessor.
+- Lokasi.
+- Jenis kebutuhan.
+- Deskripsi masalah.
+- Sumber informasi.
+- Profil penerima manfaat.
+- Jumlah calon penerima.
+- Kriteria kelayakan.
+- Estimasi biaya.
+- Alternatif solusi.
+- Risiko.
+- Rekomendasi.
+- Status verifikasi.
+- Dokumentasi.
+
+Status:
+
+- Draft.
+- Menunggu verifikasi.
+- Terverifikasi.
+- Disetujui.
+- Ditolak.
+
+Sediakan form assessment digital.
+
+Buat hasil assessment dapat dihubungkan dengan campaign.
+
+Lindungi data pribadi penerima manfaat.
+
+Jangan menampilkan NIK, alamat detail, diagnosis medis, atau informasi sensitif pada dashboard umum.
+
+---
+
+L. FUNDRAISING MANAGEMENT
+
+Buat modul fundraising yang memuat:
+
+- Target dana.
+- Dana terkumpul.
+- Persentase pencapaian.
+- Sisa target.
+- Jumlah donatur.
+- Periode campaign.
+- Kanal penghimpunan.
+- Sumber donasi.
+- PIC fundraising.
+- Riwayat donasi.
+- Evaluasi.
+
+Buat grafik perkembangan fundraising.
+
+Tampilkan:
+
+- Campaign dengan pencapaian tertinggi.
+- Campaign yang belum mencapai target.
+- Campaign yang mendekati deadline.
+- Campaign yang membutuhkan dukungan publikasi.
+
+Jangan menganggap semua dana yang terkumpul dapat langsung digunakan. Perhatikan peruntukan dan syarat donasi.
+
+---
+
+M. CRM DONATUR
+
+Buat database donatur.
+
+Informasi:
+
+- ID donatur.
+- Nama.
+- Nomor kontak.
+- Email jika tersedia.
+- Tanggal pertama berdonasi.
+- Riwayat donasi.
+- Total donasi.
+- Campaign yang didukung.
+- Preferensi komunikasi.
+- Status komunikasi.
+
+Kategori donatur:
+
+- Donatur baru.
+- Donatur aktif.
+- Donatur rutin.
+- Donatur tidak aktif.
+- Mitra.
+- Donatur institusi.
+
+Fitur:
+
+- Pencarian donatur.
+- Filter.
+- Riwayat donasi.
+- Segmentasi.
+- Catatan komunikasi.
+- Ucapan terima kasih.
+- Status laporan donatur.
+
+Batasi akses data CRM.
+
+Jangan memperlihatkan seluruh informasi donatur kepada karyawan yang tidak memerlukannya.
+
+Jangan melakukan publikasi nama donatur tanpa izin.
+
+---
+
+N. TRANSAKSI DAN PENGELOLAAN DANA
+
+Buat modul transaksi donasi.
+
+Setiap transaksi mempunyai:
+
+- ID transaksi.
+- Tanggal.
+- Donatur.
+- Campaign.
+- Jenis dana.
+- Peruntukan.
+- Metode pembayaran.
+- Nominal.
+- Bukti transaksi.
+- Pencatat.
+- Pemeriksa.
+- Status verifikasi.
+
+Pisahkan kategori:
+
+- Zakat.
+- Infak.
+- Sedekah.
+- Wakaf.
+- Qurban.
+- Donasi terikat.
+- Donasi umum.
+- Lainnya.
+
+Buat pencatatan terpisah sesuai peruntukan dan ketentuan yang berlaku.
+
+Buat laporan:
+
+- Penerimaan.
+- Pengeluaran.
+- Realisasi anggaran.
+- Saldo per campaign.
+- Rekonsiliasi.
+- Dana yang belum terverifikasi.
+
+Sistem harus menjaga pemisahan kewenangan.
+
+Admin CRM dapat mencatat transaksi.
+
+Pemeriksa lain melakukan verifikasi.
+
+Pimpinan atau pejabat berwenang menyetujui pengeluaran.
+
+Jangan memberikan seluruh kewenangan kepada satu pengguna.
+
+Setiap perubahan nominal dan peruntukan harus mempunyai jejak audit.
+
+---
+
+O. BUDGET MANAGEMENT
+
+Buat anggaran setiap campaign.
+
+Informasi:
+
+- ID campaign.
+- Kode anggaran.
+- Nama pos.
+- Anggaran yang disetujui.
+- Realisasi.
+- Selisih.
+- Persentase serapan.
+- PIC.
+- Pemeriksa.
+- Penyetuju.
+- Bukti pengeluaran.
+
+Rumus:
+Selisih = Anggaran Disetujui - Realisasi.
+
+Persentase serapan = Realisasi / Anggaran Disetujui x 100%.
+
+Tampilkan indikator:
+
+- Sesuai anggaran.
+- Mendekati batas.
+- Melebihi anggaran.
+
+Setiap perubahan anggaran memerlukan persetujuan.
+
+---
+
+P. IMPLEMENTATION MANAGEMENT
+
+Buat modul implementasi kegiatan.
+
+Informasi:
+
+- ID kegiatan.
+- Campaign.
+- Tanggal.
+- Lokasi.
+- Mitra.
+- PIC lapangan.
+- Jenis kegiatan.
+- Target penerima manfaat.
+- Realisasi penerima manfaat.
+- Anggaran.
+- Realisasi biaya.
+- Output.
+- Dokumentasi.
+- Berita acara.
+- Kendala.
+- Status laporan.
+
+Buat checklist sebelum implementasi:
+
+- Proposal disetujui.
+- Dana tersedia sesuai peruntukan.
+- Mitra terverifikasi.
+- Lokasi siap.
+- Penerima manfaat terverifikasi.
+- Tim siap.
+- Dokumentasi disiapkan.
+
+Buat checklist setelah implementasi:
+
+- Kegiatan terlaksana.
+- Penerima manfaat tercatat.
+- Bukti serah terima tersedia.
+- Dokumentasi lengkap.
+- Realisasi biaya dicatat.
+- Laporan diselesaikan.
+
+---
+
+Q. KONTEN KREATOR DAN MEDIA SOSIAL
+
+Buat kalender konten terintegrasi.
+
+Platform:
+
+- Instagram.
+- Facebook.
+- TikTok.
+- YouTube.
+- Website.
+- WhatsApp.
+
+Jenis konten:
+
+- Video campaign.
+- Video dokumentasi.
+- Reels.
+- Poster.
+- Carousel.
+- Artikel.
+- Story.
+- Testimoni.
+- Laporan kegiatan.
+
+Setiap konten memiliki:
+
+- ID konten.
+- Campaign.
+- Tujuan.
+- Brief.
+- Naskah.
+- PIC.
+- Tanggal produksi.
+- Tanggal review.
+- Tanggal publikasi.
+- Status.
+- Link aset.
+- Link publikasi.
+
+Status konten:
+
+- Ide.
+- Brief.
+- Produksi.
+- Review.
+- Disetujui.
+- Terjadwal.
+- Tayang.
+- Revisi.
+
+Buat kalender publikasi bulanan.
+
+Buat pengingat untuk konten yang belum selesai.
+
+Konten yang menampilkan penerima manfaat harus mengikuti persetujuan dokumentasi dan prinsip menjaga martabat penerima manfaat.
+
+---
+
+R. KPI DAN EVALUASI KARYAWAN
+
+Buat modul KPI.
+
+Setiap karyawan mempunyai target bulanan.
+
+KPI DIVISI PROGRAM:
+
+- Assessment selesai.
+- Proposal selesai.
+- Implementasi tepat waktu.
+- Laporan selesai.
+- Ketepatan anggaran.
+
+KPI FUNDRAISING:
+
+- Target dana.
+- Jumlah campaign aktif.
+- Donatur baru.
+- Donatur berulang.
+- Aktivitas fundraising.
+
+KPI KONTEN:
+
+- Jumlah konten selesai.
+- Ketepatan jadwal publikasi.
+- Kualitas konten.
+- Dokumentasi kegiatan.
+
+KPI ADMIN CRM:
+
+- Akurasi database.
+- Ketepatan pencatatan.
+- Rekonsiliasi.
+- Kecepatan laporan.
+- Kelengkapan data.
+
+KPI KOORDINATOR:
+
+- Penyelesaian tugas.
+- Ketepatan deadline.
+- Penyelesaian hambatan.
+- Kinerja tim.
+
+Buat grafik pencapaian KPI.
+
+Gunakan penilaian:
+
+- Sangat Baik.
+- Baik.
+- Perlu Perbaikan.
+- Tidak Tercapai.
+
+KPI harus dapat diubah oleh Super Admin.
+
+Jangan mengukur karyawan hanya berdasarkan jumlah tugas. Pertimbangkan kualitas, kompleksitas, dan dampak pekerjaan.
+
+---
+
+S. SISTEM RAPAT DAN KEPUTUSAN
+
+Buat menu:
+
+- Agenda rapat.
+- Catatan rapat.
+- Keputusan.
+- PIC tindak lanjut.
+- Deadline.
+- Status tindak lanjut.
+
+Setiap keputusan harus memiliki:
+
+- ID keputusan.
+- Tanggal.
+- Topik.
+- Keputusan.
+- Penanggung jawab.
+- Tenggat.
+- Status.
+- Bukti tindak lanjut.
+
+Keputusan rapat harus dapat diubah menjadi tugas.
+
+---
+
+T. SISTEM LAPORAN
+
+Buat laporan otomatis berdasarkan data Firestore.
+
+Jenis laporan:
+
+1. Laporan harian.
+2. Laporan mingguan.
+3. Laporan bulanan.
+4. Laporan campaign.
+5. Laporan fundraising.
+6. Laporan implementasi.
+7. Laporan kinerja karyawan.
+8. Laporan transaksi.
+9. Laporan anggaran.
+10. Laporan penerima manfaat.
+
+Sediakan:
+
+- Filter tanggal.
+- Filter program.
+- Filter campaign.
+- Filter divisi.
+- Filter PIC.
+- Export CSV.
+- Print.
+- Format PDF melalui proses ekspor yang sesuai.
+
+Semua laporan harus mengambil data aktual.
+
+Jangan membuat angka atau transaksi fiktif.
+
+---
+
+U. NOTIFICATION CENTER
+
+Buat halaman notifikasi terpusat.
+
+Kategori:
+
+- Tugas baru.
+- Perubahan tugas.
+- Deadline mendekat.
+- Tugas terlambat.
+- Tugas selesai.
+- Persetujuan diperlukan.
+- Campaign baru.
+- Assessment selesai.
+- Laporan belum selesai.
+- Kendala operasional.
+
+Setiap notifikasi mempunyai:
+
+- ID.
+- Recipient UID.
+- Jenis.
+- Judul.
+- Isi.
+- Waktu.
+- Status dibaca.
+- Link ke halaman terkait.
+
+Buat tombol:
+
+- Tandai dibaca.
+- Tandai semua dibaca.
+- Buka tugas.
+- Buka campaign.
+
+Notifikasi hanya dapat dibaca oleh pemiliknya dan pihak yang memiliki kewenangan.
+
+---
+
+V. STRUKTUR DATABASE FIRESTORE
+
+Buat struktur database modular.
+
+Collections:
+
+1. users
+2. departments
+3. programs
+4. campaigns
+5. tasks
+6. assessments
+7. donors
+8. donations
+9. budgets
+10. expenditures
+11. implementations
+12. contentCalendar
+13. notifications
+14. kpi
+15. meetings
+16. decisions
+17. auditLogs
+18. systemSettings
+
+Gunakan UID Firebase sebagai identitas pengguna.
+
+Gunakan timestamp server untuk pencatatan waktu.
+
+Gunakan ID dokumen unik.
+
+Buat relasi antar data menggunakan ID referensi.
+
+Hindari menyimpan seluruh data dalam satu dokumen besar.
+
+Buat indeks Firestore yang diperlukan.
+
+Optimalkan query agar hemat kuota gratis.
+
+Gunakan pagination untuk tabel besar.
+
+Jangan membaca seluruh database setiap kali dashboard dibuka.
+
+Buat loading state, error state, dan empty state.
+
+---
+
+W. FIREBASE SECURITY RULES
+
+Ini bagian yang sangat penting.
+
+Buat Firestore Security Rules yang ketat.
+
+Ketentuan:
+
+- Hanya pengguna terautentikasi yang dapat mengakses aplikasi.
+- Akun tidak aktif tidak dapat membaca data.
+- Super Admin memiliki akses penuh.
+- Role lain hanya dapat mengakses data sesuai kewenangan.
+- Karyawan hanya dapat mengakses tugas miliknya.
+- Pengguna tidak dapat mengubah role sendiri.
+- Pengguna tidak dapat mengaktifkan akun sendiri.
+- Pengguna tidak dapat menghapus audit log.
+- Pengguna tidak dapat membaca CRM jika tidak memiliki kewenangan.
+- Pengguna tidak dapat mengubah transaksi yang tidak menjadi tanggung jawabnya.
+- Hanya pihak berwenang dapat menyetujui anggaran.
+- Semua akses data harus diverifikasi di server.
+
+Jangan pernah menggunakan:
+
+allow read, write: if true;
+
+Jangan pernah menaruh password dalam Firestore.
+
+Jangan pernah mempercayai role yang dikirim dari frontend.
+
+Gunakan dokumen profil pengguna yang tidak dapat diubah oleh pengguna biasa.
+
+Buat pengujian Security Rules dengan Firebase Emulator.
+
+---
+
+X. AUDIT LOG DAN RIWAYAT
+
+Buat pencatatan aktivitas:
+
+- Login.
+- Logout.
+- Pembuatan tugas.
+- Perubahan tugas.
+- Perubahan deadline.
+- Perubahan PIC.
+- Persetujuan campaign.
+- Perubahan anggaran.
+- Pencatatan transaksi.
+- Perubahan data donatur.
+- Perubahan role.
+- Penonaktifan akun.
+
+Catat:
+
+- UID pengguna.
+- Nama pengguna.
+- Jenis aktivitas.
+- Data yang berubah.
+- Waktu.
+- Referensi dokumen.
+
+Audit log tidak boleh dapat diedit atau dihapus oleh pengguna biasa.
+
+Untuk tindakan finansial dan administrasi kritis, gunakan backend tepercaya jika diperlukan agar jejak audit tidak dapat dipalsukan dari browser.
+
+---
+
+Y. STRUKTUR FOLDER APLIKASI
+
+Susun kode dengan struktur modular seperti:
+
+src/
+components/
+layout/
+dashboard/
+forms/
+tables/
+notifications/
+charts/
+ui/
+
+pages/
+Login/
+Dashboard/
+Users/
+Tasks/
+Programs/
+Campaigns/
+Assessment/
+Fundraising/
+CRM/
+Finance/
+Implementation/
+Content/
+KPI/
+Reports/
+Settings/
+
+services/
+firebase/
+auth/
+users/
+tasks/
+campaigns/
+notifications/
+reports/
+
+hooks/
+contexts/
+types/
+utils/
+permissions/
+routes/
+
+firebase/
+firestore.rules
+firestore.indexes.json
+
+Jangan menempatkan seluruh kode aplikasi dalam satu file.
+
+Gunakan reusable components.
+
+Pisahkan business logic dari tampilan.
+
+---
+
+Z. STANDAR PENGUJIAN
+
+Sebelum menyatakan aplikasi selesai, lakukan pengujian.
+
+Uji:
+
+1. Login benar.
+2. Login salah.
+3. Akun tidak aktif.
+4. Username duplikat.
+5. Pembuatan akun staf.
+6. Pengubahan role.
+7. Penghapusan atau pengarsipan akun.
+8. Pembuatan tugas.
+9. Pengubahan deadline.
+10. Penentuan prioritas.
+11. Perhitungan terlambat.
+12. Notifikasi tugas baru.
+13. Penandaan notifikasi dibaca.
+14. Karyawan tidak dapat membuka tugas orang lain.
+15. Karyawan tidak dapat mengubah role.
+16. Super Admin dapat mengakses semua modul.
+17. Data campaign tersimpan.
+18. Transaksi tercatat.
+19. Anggaran dihitung benar.
+20. Laporan sesuai data.
+21. Dashboard tidak menampilkan angka palsu.
+22. Aplikasi nyaman di smartphone.
+
+Buat test cases dan dokumentasikan hasilnya.
+
+---
+
+AA. STANDAR PENGALAMAN PENGGUNA
+
+Aplikasi harus sangat mudah digunakan oleh karyawan yang tidak memiliki kemampuan teknis.
+
+Setiap halaman harus menjawab tiga pertanyaan:
+
+1. Apa yang harus saya kerjakan?
+2. Kapan harus selesai?
+3. Bagaimana saya melaporkan hasilnya?
+
+Jangan membuat navigasi yang terlalu rumit.
+
+Tampilkan tombol tindakan utama dengan jelas.
+
+Gunakan bahasa yang sederhana.
+
+Berikan petunjuk jika pengguna belum memiliki tugas.
+
+Buat halaman bantuan singkat.
+
+Sediakan konfirmasi sebelum tindakan yang berdampak besar.
+
+Gunakan soft delete atau arsip untuk data operasional, bukan penghapusan permanen secara sembarangan.
+
+---
+
+AB. PRINSIP OPERASIONAL YIUT
+
+Aplikasi harus mengikuti filosofi:
+
+"JANGAN MENUNGGU DIPERINTAH. LIHAT TUGAS, KERJAKAN, UPDATE, DAN LAPORKAN."
+
+Sistem harus membuat:
+
+- Karyawan mengetahui pekerjaan berikutnya.
+- Karyawan mengetahui prioritas.
+- Karyawan mengetahui deadline.
+- Karyawan mengetahui standar hasil.
+- Karyawan mengetahui kepada siapa harus melapor.
+- Pimpinan dapat melihat semua progres.
+- Pimpinan dapat mengidentifikasi hambatan tanpa harus bertanya satu per satu.
+
+Buat sistem kerja yang memungkinkan yayasan tetap berjalan ketika pimpinan tidak hadir.
+
+Namun, keputusan strategis, penggunaan dana, perubahan peruntukan, dan tindakan yang memiliki risiko tinggi tetap memerlukan persetujuan manusia.
+
+---
+
+AC. TAHAPAN PEMBANGUNAN
+
+Jangan membuat semua modul secara acak.
+
+Kerjakan berurutan:
+
+TAHAP 1 — FONDASI
+
+- Setup Firebase.
+- Halaman login.
+- Bootstrap Super Admin.
+- Role dan permission.
+- Struktur database.
+- Security Rules.
+
+TAHAP 2 — OPERASIONAL
+
+- Dashboard.
+- Manajemen pengguna.
+- Task Management.
+- Prioritas.
+- Deadline.
+- Notifikasi.
+- Audit log.
+
+TAHAP 3 — PROGRAM
+
+- 9 program utama.
+- Campaign.
+- Assessment.
+- Fundraising.
+- Implementasi.
+- Konten.
+
+TAHAP 4 — ADMINISTRASI
+
+- CRM.
+- Donasi.
+- Anggaran.
+- Pengeluaran.
+- Rekonsiliasi.
+
+TAHAP 5 — PENGENDALIAN
+
+- KPI.
+- Dashboard pimpinan.
+- Laporan.
+- Rapat.
+- Keputusan.
+- Evaluasi.
+
+Setiap tahap harus tetap bisa dijalankan sebelum berpindah ke tahap berikutnya.
+
+Jangan merusak fitur yang sudah berfungsi saat menambahkan fitur baru.
+
+---
+
+AD. PERINTAH EKSEKUSI UNTUK GOOGLE AI STUDIO
+
+Mulai pembangunan aplikasi sekarang.
+
+Prioritaskan aplikasi yang benar-benar berfungsi, bukan sekadar desain.
+
+Langkah awal:
+
+1. Buat seluruh struktur proyek.
+2. Buat desain login profesional.
+3. Hubungkan Firebase Authentication.
+4. Buat bootstrap Super Admin yang aman.
+5. Hubungkan Firestore.
+6. Buat Security Rules.
+7. Buat manajemen pengguna.
+8. Buat dashboard.
+9. Buat Task Management.
+10. Buat sistem prioritas dan deadline.
+
+Setelah fondasi berhasil, lanjutkan seluruh modul sesuai tahapan.
+
+Jangan menghapus kode yang sudah benar.
+
+Jika menemukan error, perbaiki error tersebut sebelum melanjutkan.
+
+Jangan mengklaim integrasi Firebase berhasil sebelum benar-benar diuji.
+
+Jika membutuhkan konfigurasi Firebase dari pengguna, tampilkan petunjuk yang jelas.
+
+Jika ada fitur yang tidak dapat dijalankan pada Firebase Spark, jelaskan keterbatasannya dan berikan alternatif gratis yang realistis.
+
+HASIL AKHIR YANG DIHARAPKAN:
+
+ULURTANGAN OS menjadi aplikasi operasional resmi Yayasan Indonesia Uluran Tangan yang terintegrasi, aman, mudah digunakan, hemat biaya, dan dapat dikembangkan sesuai pertumbuhan yayasan.
+
+Fokus utama:
+
+MEMBANGUN YAYASAN YANG BERJALAN DENGAN SISTEM, BUKAN BERGANTUNG PADA PERINTAH PIMPINAN.
+
+Mulai implementasi sekarang. Jangan berhenti pada penjelasan atau rancangan. Bangun kode aplikasinya, uji, dan dokumentasikan langkah menjalankannya.

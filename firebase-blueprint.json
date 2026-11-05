@@ -1,0 +1,450 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile for YIUT staff and volunteers",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "maxLength": 64, "pattern": "^[a-z0-9_.-]+$" },
+        "fullName": { "type": "string", "maxLength": 128 },
+        "department": { "type": "string", "maxLength": 64 },
+        "role": {
+          "type": "string",
+          "enum": [
+            "SUPER_ADMIN",
+            "PIMPINAN",
+            "KOORDINATOR_OPERASIONAL",
+            "DIVISI_PROGRAM",
+            "DIVISI_FUNDRAISING",
+            "KONTEN_KREATOR_VIDEO",
+            "MEDIA_SOSIAL_WEBSITE",
+            "ADMIN_CRM",
+            "KARYAWAN_RELAWAN"
+          ]
+        },
+        "phoneNumber": { "type": "string", "maxLength": 32 },
+        "isActive": { "type": "boolean" },
+        "mustChangePassword": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username", "fullName", "department", "role", "isActive"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Operational task item assigned to employees or teams",
+      "type": "object",
+      "properties": {
+        "taskId": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 5000 },
+        "department": { "type": "string", "maxLength": 64 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "picId": { "type": "string", "maxLength": 128 },
+        "picName": { "type": "string", "maxLength": 128 },
+        "supportingMembers": { "type": "array" },
+        "createdById": { "type": "string", "maxLength": 128 },
+        "createdByName": { "type": "string", "maxLength": 128 },
+        "priority": { "type": "string", "enum": ["KRITIS", "TINGGI", "NORMAL", "RENDAH"] },
+        "status": {
+          "type": "string",
+          "enum": ["BACKLOG", "SIAP_DIKERJAKAN", "BERJALAN", "MENUNGGU_PERSETUJUAN", "TERHAMBAT", "SELESAI", "DIBATALKAN"]
+        },
+        "startDate": { "type": "string", "format": "date" },
+        "deadline": { "type": "string", "format": "date" },
+        "progress": { "type": "number" },
+        "documentLinks": { "type": "array" },
+        "proofLinks": { "type": "array" },
+        "notes": { "type": "string", "maxLength": 3000 },
+        "obstacles": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["taskId", "title", "department", "picId", "priority", "status", "deadline"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Charity campaign associated with a major foundation program",
+      "type": "object",
+      "properties": {
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "programType": {
+          "type": "string",
+          "enum": [
+            "ZAKAT",
+            "PENDIDIKAN",
+            "KESEHATAN",
+            "PANGAN",
+            "AIR_BERSIH",
+            "PEMBERDAYAAN",
+            "EMERGENCY",
+            "RAMADHAN",
+            "QURBAN"
+          ]
+        },
+        "description": { "type": "string", "maxLength": 5000 },
+        "background": { "type": "string", "maxLength": 3000 },
+        "location": { "type": "string", "maxLength": 200 },
+        "targetBeneficiaries": { "type": "number" },
+        "targetBeneficiaryDescription": { "type": "string", "maxLength": 500 },
+        "picProgramId": { "type": "string", "maxLength": 128 },
+        "picProgramName": { "type": "string", "maxLength": 128 },
+        "picFundraisingId": { "type": "string", "maxLength": 128 },
+        "picFundraisingName": { "type": "string", "maxLength": 128 },
+        "targetAmount": { "type": "number" },
+        "collectedAmount": { "type": "number" },
+        "budgetApproved": { "type": "number" },
+        "startDate": { "type": "string", "format": "date" },
+        "deadline": { "type": "string", "format": "date" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "IDE",
+            "ASSESSMENT",
+            "PERSETUJUAN",
+            "PERSIAPAN_FUNDRAISING",
+            "FUNDRAISING",
+            "SIAP_IMPLEMENTASI",
+            "IMPLEMENTASI",
+            "PELAPORAN",
+            "EVALUASI",
+            "SELESAI",
+            "DIBATALKAN"
+          ]
+        },
+        "proposalUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["campaignId", "title", "programType", "targetAmount", "status", "deadline"]
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "description": "Beneficiary needs assessment form and verification",
+      "type": "object",
+      "properties": {
+        "assessmentId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "format": "date" },
+        "assessorId": { "type": "string", "maxLength": 128 },
+        "assessorName": { "type": "string", "maxLength": 128 },
+        "location": { "type": "string", "maxLength": 200 },
+        "needType": { "type": "string", "maxLength": 100 },
+        "problemDescription": { "type": "string", "maxLength": 3000 },
+        "sourceOfInformation": { "type": "string", "maxLength": 200 },
+        "targetCount": { "type": "number" },
+        "eligibilityCriteria": { "type": "string", "maxLength": 2000 },
+        "estimatedCost": { "type": "number" },
+        "alternativeSolutions": { "type": "string", "maxLength": 2000 },
+        "risks": { "type": "string", "maxLength": 2000 },
+        "recommendations": { "type": "string", "maxLength": 2000 },
+        "status": { "type": "string", "enum": ["DRAFT", "MENUNGGU_VERIFIKASI", "TERVERIFIKASI", "DISETUJUI", "DITOLAK"] },
+        "linkedCampaignId": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assessmentId", "date", "assessorName", "location", "needType", "status"]
+    },
+    "Donor": {
+      "title": "Donor",
+      "description": "Charity donor database record",
+      "type": "object",
+      "properties": {
+        "donorId": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 128 },
+        "phoneNumber": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "category": { "type": "string", "enum": ["DONATUR_BARU", "DONATUR_AKTIF", "DONATUR_RUTIN", "DONATUR_TIDAK_AKTIF", "MITRA", "DONATUR_INSTITUSI"] },
+        "firstDonationDate": { "type": "string", "format": "date" },
+        "totalDonations": { "type": "number" },
+        "donationCount": { "type": "number" },
+        "communicationPreference": { "type": "string", "maxLength": 64 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["donorId", "name", "category"]
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Financial donation transaction with verification workflow",
+      "type": "object",
+      "properties": {
+        "donationId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "format": "date" },
+        "donorId": { "type": "string", "maxLength": 64 },
+        "donorName": { "type": "string", "maxLength": 128 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "campaignTitle": { "type": "string", "maxLength": 200 },
+        "fundType": { "type": "string", "enum": ["ZAKAT", "INFAK", "SEDEKAH", "WAKAF", "QURBAN", "DONASI_TERIKAT", "DONASI_UMUM", "LAINNYA"] },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "amount": { "type": "number" },
+        "proofUrl": { "type": "string", "maxLength": 500 },
+        "recorderId": { "type": "string", "maxLength": 128 },
+        "recorderName": { "type": "string", "maxLength": 128 },
+        "verifierId": { "type": "string", "maxLength": 128 },
+        "verifierName": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["MENUNGGU_VERIFIKASI", "TERVERIFIKASI", "DITOLAK"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["donationId", "date", "donorName", "fundType", "amount", "status"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Campaign budget item and expenditure tracking",
+      "type": "object",
+      "properties": {
+        "budgetId": { "type": "string", "maxLength": 64 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "budgetCode": { "type": "string", "maxLength": 64 },
+        "category": { "type": "string", "maxLength": 128 },
+        "approvedAmount": { "type": "number" },
+        "realizedAmount": { "type": "number" },
+        "picId": { "type": "string", "maxLength": 128 },
+        "picName": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["DISETUJUI", "MENUNGGU_PERSETUJUAN", "REVISI", "DITOLAK"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["budgetId", "campaignId", "category", "approvedAmount"]
+    },
+    "Expenditure": {
+      "title": "Expenditure",
+      "description": "Actual expense item logged against campaign budget",
+      "type": "object",
+      "properties": {
+        "expenditureId": { "type": "string", "maxLength": 64 },
+        "budgetId": { "type": "string", "maxLength": 64 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "description": { "type": "string", "maxLength": 500 },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "format": "date" },
+        "proofUrl": { "type": "string", "maxLength": 500 },
+        "spenderId": { "type": "string", "maxLength": 128 },
+        "spenderName": { "type": "string", "maxLength": 128 },
+        "approverId": { "type": "string", "maxLength": 128 },
+        "approverName": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["MENUNGGU_PERSETUJUAN", "DISETUJUI", "DITOLAK"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["expenditureId", "campaignId", "amount", "status"]
+    },
+    "Implementation": {
+      "title": "Implementation",
+      "description": "Field implementation report and checklist",
+      "type": "object",
+      "properties": {
+        "implementationId": { "type": "string", "maxLength": 64 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "activityTitle": { "type": "string", "maxLength": 200 },
+        "date": { "type": "string", "format": "date" },
+        "location": { "type": "string", "maxLength": 200 },
+        "partner": { "type": "string", "maxLength": 128 },
+        "fieldPicName": { "type": "string", "maxLength": 128 },
+        "targetBeneficiaries": { "type": "number" },
+        "actualBeneficiaries": { "type": "number" },
+        "budgetApproved": { "type": "number" },
+        "actualCost": { "type": "number" },
+        "outputSummary": { "type": "string", "maxLength": 3000 },
+        "documentationUrls": { "type": "array" },
+        "minutesUrl": { "type": "string", "maxLength": 500 },
+        "obstacles": { "type": "string", "maxLength": 2000 },
+        "preChecklist": { "type": "object" },
+        "postChecklist": { "type": "object" },
+        "status": { "type": "string", "enum": ["PERSIAPAN", "BERJALAN", "SELESAI", "TERKENDALA"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["implementationId", "campaignId", "activityTitle", "date", "status"]
+    },
+    "ContentItem": {
+      "title": "ContentItem",
+      "description": "Social media and video content production item",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string", "maxLength": 64 },
+        "campaignId": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "platforms": { "type": "array" },
+        "contentType": {
+          "type": "string",
+          "enum": ["VIDEO_CAMPAIGN", "VIDEO_DOKUMENTASI", "REELS", "POSTER", "CAROUSEL", "ARTIKEL", "STORY", "TESTIMONI", "LAPORAN"]
+        },
+        "picId": { "type": "string", "maxLength": 128 },
+        "picName": { "type": "string", "maxLength": 128 },
+        "brief": { "type": "string", "maxLength": 3000 },
+        "script": { "type": "string", "maxLength": 4000 },
+        "productionDate": { "type": "string", "format": "date" },
+        "reviewDate": { "type": "string", "format": "date" },
+        "publishDate": { "type": "string", "format": "date" },
+        "status": {
+          "type": "string",
+          "enum": ["IDE", "BRIEF", "PRODUKSI", "REVIEW", "DISETUJUI", "TERJADWAL", "TAYANG", "REVISI"]
+        },
+        "assetUrl": { "type": "string", "maxLength": 500 },
+        "publishUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["contentId", "title", "contentType", "status"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Internal push notification for tasks, approvals, and deadlines",
+      "type": "object",
+      "properties": {
+        "notificationId": { "type": "string", "maxLength": 128 },
+        "recipientUid": { "type": "string", "maxLength": 128 },
+        "type": {
+          "type": "string",
+          "enum": [
+            "TUGAS_BARU",
+            "PERUBAHAN_TUGAS",
+            "DEADLINE_MENDEKAT",
+            "DEADLINE_LEWAT",
+            "TUGAS_SELESAI",
+            "PERSETUJUAN_DIPERLUKAN",
+            "CAMPAIGN_BARU",
+            "ASSESSMENT_SELESAI",
+            "LAPORAN_PENDING",
+            "KENDALA_OPERASIONAL"
+          ]
+        },
+        "title": { "type": "string", "maxLength": 200 },
+        "body": { "type": "string", "maxLength": 1000 },
+        "link": { "type": "string", "maxLength": 200 },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["notificationId", "recipientUid", "type", "title", "body", "isRead"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Foundation meeting notes and agendas",
+      "type": "object",
+      "properties": {
+        "meetingId": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "date": { "type": "string", "format": "date" },
+        "leaderName": { "type": "string", "maxLength": 128 },
+        "attendees": { "type": "array" },
+        "agenda": { "type": "string", "maxLength": 3000 },
+        "notes": { "type": "string", "maxLength": 5000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["meetingId", "title", "date"]
+    },
+    "Decision": {
+      "title": "Decision",
+      "description": "Meeting decision with actionable follow-up task conversion",
+      "type": "object",
+      "properties": {
+        "decisionId": { "type": "string", "maxLength": 64 },
+        "meetingId": { "type": "string", "maxLength": 64 },
+        "topic": { "type": "string", "maxLength": 200 },
+        "decisionText": { "type": "string", "maxLength": 2000 },
+        "picId": { "type": "string", "maxLength": 128 },
+        "picName": { "type": "string", "maxLength": 128 },
+        "deadline": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["BELUM_DILAKSANAKAN", "PROSES", "SELESAI", "DIBATALKAN"] },
+        "convertedTaskId": { "type": "string", "maxLength": 64 },
+        "proofOfExecution": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["decisionId", "topic", "decisionText", "status"]
+    },
+    "KPI": {
+      "title": "KPI",
+      "description": "Monthly staff target and evaluation score",
+      "type": "object",
+      "properties": {
+        "kpiId": { "type": "string", "maxLength": 64 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 128 },
+        "department": { "type": "string", "maxLength": 64 },
+        "periodMonth": { "type": "string", "maxLength": 16 },
+        "targets": { "type": "array" },
+        "score": { "type": "number" },
+        "grade": { "type": "string", "enum": ["SANGAT_BAIK", "BAIK", "PERLU_PERBAIKAN", "TIDAK_TERCAPAI"] },
+        "evaluatorNotes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["kpiId", "userId", "periodMonth", "grade"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable security and operational activity log",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string", "maxLength": 64 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 128 },
+        "action": { "type": "string", "maxLength": 64 },
+        "details": { "type": "string", "maxLength": 2000 },
+        "resourceType": { "type": "string", "maxLength": 64 },
+        "resourceId": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["logId", "userId", "action", "resourceType", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "UserProfile" },
+      "description": "User profiles and RBAC role definitions"
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "Task" },
+      "description": "Operational task repository"
+    },
+    "/campaigns/{campaignId}": {
+      "schema": { "$ref": "Campaign" },
+      "description": "Foundation charity campaigns"
+    },
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "Assessment" },
+      "description": "Beneficiary needs assessments"
+    },
+    "/donors/{donorId}": {
+      "schema": { "$ref": "Donor" },
+      "description": "CRM donor records"
+    },
+    "/donations/{donationId}": {
+      "schema": { "$ref": "Donation" },
+      "description": "Donation transactions"
+    },
+    "/budgets/{budgetId}": {
+      "schema": { "$ref": "Budget" },
+      "description": "Campaign budget allocations"
+    },
+    "/expenditures/{expenditureId}": {
+      "schema": { "$ref": "Expenditure" },
+      "description": "Realized expenditure receipts"
+    },
+    "/implementations/{implementationId}": {
+      "schema": { "$ref": "Implementation" },
+      "description": "Field program implementation records"
+    },
+    "/contentCalendar/{contentId}": {
+      "schema": { "$ref": "ContentItem" },
+      "description": "Content creation items"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "Notification" },
+      "description": "Personalized user alerts"
+    },
+    "/meetings/{meetingId}": {
+      "schema": { "$ref": "Meeting" },
+      "description": "Meeting minutes and agendas"
+    },
+    "/decisions/{decisionId}": {
+      "schema": { "$ref": "Decision" },
+      "description": "Actionable meeting decisions"
+    },
+    "/kpi/{kpiId}": {
+      "schema": { "$ref": "KPI" },
+      "description": "Monthly staff performance KPI"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "AuditLog" },
+      "description": "Append-only operational audit trail"
+    }
+  }
+}

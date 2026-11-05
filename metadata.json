@@ -1,0 +1,6 @@
+{
+  "name": "ULURTANGAN OS — Yayasan Indonesia Uluran Tangan",
+  "description": "Sistem Manajemen Operasional Terpadu & Charity Operations Yayasan Indonesia Uluran Tangan (YIUT) — Bergerak dengan Sistem, Melayani dengan Amanah.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
