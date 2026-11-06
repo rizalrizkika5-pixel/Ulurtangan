@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Task, Campaign, Donation, Donor, UserProfile } from '../types';
 import { formatIDR, formatDateID } from '../utils/formatters';
-import { FileText, Download, Printer, Filter, Calendar, CheckSquare, Coins } from 'lucide-react';
+import { FileText, Download, Printer, Filter, Calendar, CheckSquare, Coins, Edit2 } from 'lucide-react';
+import { Modal } from '../components/common/Modal';
 
 interface Props {
   tasks: Task[];
@@ -22,6 +23,46 @@ export const ReportsPage: React.FC<Props> = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('ALL');
+
+  // Signature Customization state
+  const [leaderTitle, setLeaderTitle] = useState(() => localStorage.getItem('yiut_rep_leader_title') || 'Direktur Eksekutif YIUT');
+  const [leaderName, setLeaderName] = useState(() => localStorage.getItem('yiut_rep_leader_name') || 'Ustadz H. Abdullah, S.Sos.');
+  const [preparerTitle, setPreparerTitle] = useState(() => localStorage.getItem('yiut_rep_prep_title') || 'Manajer Keuangan & Operasional');
+  const [preparerName, setPreparerName] = useState(() => localStorage.getItem('yiut_rep_prep_name') || 'Ahmad Fauzi, S.E.');
+  const [cityDate, setCityDate] = useState(() => localStorage.getItem('yiut_rep_city_date') || `Jakarta, ${new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())}`);
+  const [showEditSignModal, setShowEditSignModal] = useState(false);
+
+  const [tempLeaderTitle, setTempLeaderTitle] = useState(leaderTitle);
+  const [tempLeaderName, setTempLeaderName] = useState(leaderName);
+  const [tempPreparerTitle, setTempPreparerTitle] = useState(preparerTitle);
+  const [tempPreparerName, setTempPreparerName] = useState(preparerName);
+  const [tempCityDate, setTempCityDate] = useState(cityDate);
+
+  const openSignModal = () => {
+    setTempLeaderTitle(leaderTitle);
+    setTempLeaderName(leaderName);
+    setTempPreparerTitle(preparerTitle);
+    setTempPreparerName(preparerName);
+    setTempCityDate(cityDate);
+    setShowEditSignModal(true);
+  };
+
+  const handleSaveSignature = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLeaderTitle(tempLeaderTitle);
+    setLeaderName(tempLeaderName);
+    setPreparerTitle(tempPreparerTitle);
+    setPreparerName(tempPreparerName);
+    setCityDate(tempCityDate);
+
+    localStorage.setItem('yiut_rep_leader_title', tempLeaderTitle);
+    localStorage.setItem('yiut_rep_leader_name', tempLeaderName);
+    localStorage.setItem('yiut_rep_prep_title', tempPreparerTitle);
+    localStorage.setItem('yiut_rep_prep_name', tempPreparerName);
+    localStorage.setItem('yiut_rep_city_date', tempCityDate);
+
+    setShowEditSignModal(false);
+  };
 
   const handlePrint = () => {
     window.print();
@@ -323,21 +364,137 @@ export const ReportsPage: React.FC<Props> = ({
         )}
 
         {/* Signature Area */}
-        <div className="pt-8 grid grid-cols-2 text-center text-xs text-slate-700">
-          <div>
-            <p>Mengetahui,</p>
-            <p className="font-bold mt-1">Direktur Eksekutif YIUT</p>
-            <div className="h-16" />
-            <p className="font-bold underline">Ustadz H. Abdullah, S.Sos.</p>
+        <div className="pt-8 border-t border-slate-100 space-y-4">
+          <div className="flex items-center justify-between print:hidden">
+            <span className="text-[11px] text-slate-400 font-medium">Pengesahan Dokumen Laporan Resmi YIUT:</span>
+            <button
+              onClick={openSignModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl transition border border-emerald-200"
+            >
+              <Edit2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Edit Nama & Tanda Tangan Pimpinan</span>
+            </button>
           </div>
-          <div>
-            <p>Disusun oleh,</p>
-            <p className="font-bold mt-1">Manajer Keuangan & Operasional</p>
-            <div className="h-16" />
-            <p className="font-bold underline">Ahmad Fauzi, S.E.</p>
+
+          <p className="text-right text-xs text-slate-500 font-medium">{cityDate}</p>
+
+          <div className="grid grid-cols-2 text-center text-xs text-slate-700 pt-2">
+            <div>
+              <p>Mengetahui,</p>
+              <p className="font-bold mt-1 text-slate-900">{leaderTitle}</p>
+              <div className="h-16 flex items-center justify-center">
+                <span className="text-[10px] text-slate-300 font-serif italic print:hidden">(Tanda Tangan)</span>
+              </div>
+              <p className="font-bold underline text-slate-900">{leaderName}</p>
+            </div>
+            <div>
+              <p>Disusun oleh,</p>
+              <p className="font-bold mt-1 text-slate-900">{preparerTitle}</p>
+              <div className="h-16 flex items-center justify-center">
+                <span className="text-[10px] text-slate-300 font-serif italic print:hidden">(Tanda Tangan)</span>
+              </div>
+              <p className="font-bold underline text-slate-900">{preparerName}</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Modal Edit Tanda Tangan Laporan */}
+      {showEditSignModal && (
+        <Modal
+          isOpen={showEditSignModal}
+          onClose={() => setShowEditSignModal(false)}
+          title="Kustomisasi Tanda Tangan Laporan"
+          subtitle="Atur nama pimpinan, jabatan, dan penyusun laporan sesuai kebutuhan cetak"
+          maxWidth="md"
+        >
+          <form onSubmit={handleSaveSignature} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Kota & Tanggal Laporan</label>
+              <input
+                type="text"
+                required
+                value={tempCityDate}
+                onChange={(e) => setTempCityDate(e.target.value)}
+                placeholder="Contoh: Jakarta, 06 November 2026"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl"
+              />
+            </div>
+
+            <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-3">
+              <h4 className="font-bold text-emerald-950 uppercase tracking-tight text-[11px]">
+                Pihak Mengetahui (Pimpinan / Direktur)
+              </h4>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Jabatan Pimpinan</label>
+                <input
+                  type="text"
+                  required
+                  value={tempLeaderTitle}
+                  onChange={(e) => setTempLeaderTitle(e.target.value)}
+                  placeholder="Contoh: Direktur Eksekutif YIUT / Ketua Yayasan"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar Pimpinan</label>
+                <input
+                  type="text"
+                  required
+                  value={tempLeaderName}
+                  onChange={(e) => setTempLeaderName(e.target.value)}
+                  placeholder="Contoh: Ustadz H. Abdullah, S.Sos."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <h4 className="font-bold text-slate-800 uppercase tracking-tight text-[11px]">
+                Pihak Penyusun (Manajer / Staf)
+              </h4>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Jabatan Penyusun</label>
+                <input
+                  type="text"
+                  required
+                  value={tempPreparerTitle}
+                  onChange={(e) => setTempPreparerTitle(e.target.value)}
+                  placeholder="Contoh: Manajer Keuangan & Operasional"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">Nama Lengkap Penyusun</label>
+                <input
+                  type="text"
+                  required
+                  value={tempPreparerName}
+                  onChange={(e) => setTempPreparerName(e.target.value)}
+                  placeholder="Contoh: Ahmad Fauzi, S.E."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowEditSignModal(false)}
+                className="px-4 py-2 text-slate-600 rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl transition"
+              >
+                Simpan Tanda Tangan
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };

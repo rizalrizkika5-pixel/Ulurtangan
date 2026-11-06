@@ -4,6 +4,7 @@ import { CampaignCard } from '../components/campaigns/CampaignCard';
 import { CampaignFormModal } from '../components/campaigns/CampaignFormModal';
 import { CampaignDetailModal } from '../components/campaigns/CampaignDetailModal';
 import { Search, Plus, HeartHandshake } from 'lucide-react';
+import { deleteCampaign } from '../services/campaignService';
 
 interface Props {
   campaigns: Campaign[];
@@ -28,6 +29,27 @@ export const CampaignsPage: React.FC<Props> = ({
 
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [campaignToEdit, setCampaignToEdit] = useState<Campaign | null>(null);
+
+  const handleEditCampaign = (c: Campaign) => {
+    setSelectedCampaign(null);
+    setCampaignToEdit(c);
+  };
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    const confirm = window.confirm(
+      'Apakah Anda yakin ingin menghapus campaign ini? Semua data terkait di dalamnya akan dihapus.'
+    );
+    if (!confirm) return;
+
+    try {
+      await deleteCampaign(campaignId);
+      setSelectedCampaign(null);
+      onRefresh();
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus campaign');
+    }
+  };
 
   const filtered = campaigns.filter((c) => {
     const matchSearch =
@@ -135,17 +157,27 @@ export const CampaignsPage: React.FC<Props> = ({
           donations={donations}
           currentUserProfile={currentUserProfile}
           onRefresh={onRefresh}
+          onEditCampaign={handleEditCampaign}
+          onDeleteCampaign={handleDeleteCampaign}
         />
       )}
 
-      {/* Campaign Form Modal */}
-      {showCreateModal && (
+      {/* Campaign Form Modal (Create or Edit) */}
+      {(showCreateModal || !!campaignToEdit) && (
         <CampaignFormModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
+          isOpen={showCreateModal || !!campaignToEdit}
+          onClose={() => {
+            setShowCreateModal(false);
+            setCampaignToEdit(null);
+          }}
+          campaignToEdit={campaignToEdit}
           users={users}
           currentUserProfile={currentUserProfile}
-          onSuccess={onRefresh}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            setCampaignToEdit(null);
+            onRefresh();
+          }}
         />
       )}
     </div>

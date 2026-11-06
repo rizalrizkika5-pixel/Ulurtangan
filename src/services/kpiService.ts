@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -70,7 +71,18 @@ export async function updateKPI(id: string, updates: Partial<KPI>): Promise<void
   const path = `${COLLECTION_PATH}/${id}`;
   try {
     await updateDoc(doc(db, COLLECTION_PATH, id), updates);
+    await logAuditEvent('UPDATE_KPI', `Penilaian KPI ${id} diperbarui`, 'KPI', id);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteKPI(id: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${id}`;
+  try {
+    await deleteDoc(doc(db, COLLECTION_PATH, id));
+    await logAuditEvent('HAPUS_KPI', `Penilaian KPI ${id} dihapus`, 'KPI', id);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

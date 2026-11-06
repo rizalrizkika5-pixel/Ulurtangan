@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Meeting, Decision, UserProfile } from '../types';
-import { subscribeMeetings, subscribeDecisions, createMeeting, convertDecisionToTask } from '../services/meetingService';
+import {
+  subscribeMeetings,
+  subscribeDecisions,
+  createMeeting,
+  updateMeeting,
+  deleteMeeting,
+  updateDecision,
+  deleteDecision,
+  convertDecisionToTask,
+} from '../services/meetingService';
 import { formatDateID } from '../utils/formatters';
 import { Modal } from '../components/common/Modal';
 import {
@@ -11,6 +20,8 @@ import {
   ArrowRight,
   FileText,
   Sparkles,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
@@ -33,6 +44,7 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
     day: '2-digit',
   }).format(new Date());
 
+  const [meetingToEdit, setMeetingToEdit] = useState<Meeting | null>(null);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(todayStr);
   const [leaderName, setLeaderName] = useState(currentUserProfile?.fullName || 'Pimpinan Rapat');
@@ -52,6 +64,54 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
     };
   }, []);
 
+  const handleOpenCreate = () => {
+    setMeetingToEdit(null);
+    setTitle('');
+    setDate(todayStr);
+    setLeaderName(currentUserProfile?.fullName || 'Pimpinan Rapat');
+    setAgenda('');
+    setNotes('');
+    setDecisionTopic('');
+    setDecisionText('');
+    setDecisionPicId('');
+    setShowMeetingModal(true);
+  };
+
+  const handleOpenEdit = (m: Meeting) => {
+    setMeetingToEdit(m);
+    setTitle(m.title);
+    setDate(m.date);
+    setLeaderName(m.leaderName);
+    setAgenda(m.agenda);
+    setNotes(m.notes);
+    setDecisionTopic('');
+    setDecisionText('');
+    setDecisionPicId('');
+    setSelectedMeeting(null);
+    setShowMeetingModal(true);
+  };
+
+  const handleDeleteMeeting = async (mId: string) => {
+    const confirm = window.confirm('Apakah Anda yakin ingin menghapus notulensi rapat ini?');
+    if (!confirm) return;
+    try {
+      await deleteMeeting(mId);
+      setSelectedMeeting(null);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus notulensi');
+    }
+  };
+
+  const handleDeleteDecision = async (decId: string) => {
+    const confirm = window.confirm('Apakah Anda yakin ingin menghapus keputusan ini?');
+    if (!confirm) return;
+    try {
+      await deleteDecision(decId);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus keputusan');
+    }
+  };
+
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -59,29 +119,40 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
     const picUser = users.find((u) => u.uid === decisionPicId);
 
     try {
-      await createMeeting(
-        {
+      if (meetingToEdit) {
+        await updateMeeting(meetingToEdit.id, {
           title: title.trim(),
           date,
           leaderName,
-          attendees: [leaderName],
           agenda: agenda.trim(),
           notes: notes.trim(),
-        },
-        decisionTopic.trim()
-          ? [
-              {
-                topic: decisionTopic.trim(),
-                decisionText: decisionText.trim() || decisionTopic.trim(),
-                picId: decisionPicId,
-                picName: picUser?.fullName,
-                deadline: date,
-              },
-            ]
-          : undefined
-      );
+        });
+      } else {
+        await createMeeting(
+          {
+            title: title.trim(),
+            date,
+            leaderName,
+            attendees: [leaderName],
+            agenda: agenda.trim(),
+            notes: notes.trim(),
+          },
+          decisionTopic.trim()
+            ? [
+                {
+                  topic: decisionTopic.trim(),
+                  decisionText: decisionText.trim() || decisionTopic.trim(),
+                  picId: decisionPicId,
+                  picName: picUser?.fullName,
+                  deadline: date,
+                },
+              ]
+            : undefined
+        );
+      }
 
       setShowMeetingModal(false);
+      setMeetingToEdit(null);
       setTitle('');
       setAgenda('');
       setNotes('');
@@ -125,7 +196,7 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
         </div>
 
         <button
-          onClick={() => setShowMeetingModal(true)}
+          onClick={handleOpenCreate}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-[#173D32] hover:bg-[#245D49] text-white text-xs font-bold rounded-xl transition shadow-xs"
         >
           <Plus className="w-4 h-4" />
@@ -173,7 +244,7 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
                   </p>
                 </div>
 
-                <div>
+                <div className="flex items-center gap-2">
                   {dec.convertedTaskId ? (
                     <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 font-semibold text-xs border border-emerald-200 inline-flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -189,6 +260,13 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
                       <span>{convertingId === dec.id ? 'Mengonversi...' : 'Konversi Jadi Tugas'}</span>
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDeleteDecision(dec.id)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                    title="Hapus Keputusan"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             ))
@@ -207,7 +285,25 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[10px] text-slate-400 font-bold">{m.meetingId}</span>
-                <span className="text-[11px] text-slate-500">{formatDateID(m.date)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-slate-500">{formatDateID(m.date)}</span>
+                  <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => handleOpenEdit(m)}
+                      className="p-1 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-slate-100 transition"
+                      title="Edit Notulensi"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMeeting(m.id)}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                      title="Hapus Notulensi"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
               <h3 className="font-bold text-slate-900 text-sm line-clamp-2 leading-snug">{m.title}</h3>
               <p className="text-xs text-slate-600 mt-2 line-clamp-2">{m.agenda}</p>
@@ -229,6 +325,29 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
           maxWidth="lg"
         >
           <div className="space-y-4 text-xs">
+            {/* Header Action Bar */}
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="font-bold text-slate-700">Tindakan Notulensi:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(selectedMeeting)}
+                  className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Edit Data</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteMeeting(selectedMeeting.id)}
+                  className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Hapus</span>
+                </button>
+              </div>
+            </div>
+
             <div>
               <span className="font-bold text-slate-800 block mb-1">Agenda Pembahasan:</span>
               <p className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 leading-relaxed whitespace-pre-wrap">
@@ -245,13 +364,16 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
         </Modal>
       )}
 
-      {/* Create Meeting Modal */}
+      {/* Create / Edit Meeting Modal */}
       {showMeetingModal && (
         <Modal
           isOpen={showMeetingModal}
-          onClose={() => setShowMeetingModal(false)}
-          title="Notulensi Rapat & Keputusan Baru"
-          subtitle="Dokumentasikan hasil rapat dan hasil keputusan strategis"
+          onClose={() => {
+            setShowMeetingModal(false);
+            setMeetingToEdit(null);
+          }}
+          title={meetingToEdit ? 'Edit Notulensi Rapat' : 'Notulensi Rapat & Keputusan Baru'}
+          subtitle={meetingToEdit ? `ID: ${meetingToEdit.meetingId}` : 'Dokumentasikan hasil rapat dan hasil keputusan strategis'}
           maxWidth="md"
         >
           <form onSubmit={handleCreateMeeting} className="space-y-3 text-xs">
@@ -312,34 +434,39 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
               />
             </div>
 
-            {/* Decision Line */}
-            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
-              <span className="font-bold text-amber-950 block">Keputusan yang Harus Ditindaklanjuti:</span>
-              <input
-                type="text"
-                value={decisionTopic}
-                onChange={(e) => setDecisionTopic(e.target.value)}
-                placeholder="Poin keputusan utama..."
-                className="w-full px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs"
-              />
-              <select
-                value={decisionPicId}
-                onChange={(e) => setDecisionPicId(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs"
-              >
-                <option value="">-- Tetapkan PIC Penanggung Jawab --</option>
-                {users.map((u) => (
-                  <option key={u.uid} value={u.uid}>
-                    {u.fullName} ({u.department})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Decision Line (only when creating) */}
+            {!meetingToEdit && (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+                <span className="font-bold text-amber-950 block">Keputusan yang Harus Ditindaklanjuti:</span>
+                <input
+                  type="text"
+                  value={decisionTopic}
+                  onChange={(e) => setDecisionTopic(e.target.value)}
+                  placeholder="Poin keputusan utama..."
+                  className="w-full px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs"
+                />
+                <select
+                  value={decisionPicId}
+                  onChange={(e) => setDecisionPicId(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs"
+                >
+                  <option value="">-- Tetapkan PIC Penanggung Jawab --</option>
+                  {users.map((u) => (
+                    <option key={u.uid} value={u.uid}>
+                      {u.fullName} ({u.department})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-3">
               <button
                 type="button"
-                onClick={() => setShowMeetingModal(false)}
+                onClick={() => {
+                  setShowMeetingModal(false);
+                  setMeetingToEdit(null);
+                }}
                 className="px-4 py-2 text-slate-600 rounded-xl"
               >
                 Batal
@@ -348,7 +475,7 @@ export const MeetingsPage: React.FC<Props> = ({ users, currentUserProfile, onRef
                 type="submit"
                 className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl"
               >
-                Simpan Notulensi
+                {meetingToEdit ? 'Simpan Perubahan' : 'Simpan Notulensi'}
               </button>
             </div>
           </form>

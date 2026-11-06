@@ -24,6 +24,8 @@ import { ReportsPage } from './pages/ReportsPage';
 import { UsersPage } from './pages/UsersPage';
 import { AuditLogPage } from './pages/AuditLogPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { StaffSummaryPage } from './pages/StaffSummaryPage';
+import { UserGuidePage } from './pages/UserGuidePage';
 
 // Modals
 import { TaskProgressModal } from './components/tasks/TaskProgressModal';
@@ -123,6 +125,8 @@ function MainApp() {
         return 'Pusat Kendali Operasional';
       case 'tasks':
         return 'Manajemen Tugas';
+      case 'staff-summary':
+        return 'Rangkuman Karyawan & Kontrol Tugas';
       case 'programs':
         return '9 Program Utama Yayasan';
       case 'campaigns':
@@ -153,6 +157,8 @@ function MainApp() {
         return 'Jejak Audit Keamanan';
       case 'notifications':
         return 'Pemberitahuan Internal';
+      case 'guide':
+        return 'Panduan Penggunaan Sistem';
       default:
         return 'ULURTANGAN OS';
     }
@@ -249,6 +255,16 @@ function MainApp() {
               onSelectTask={(t) => setSelectedTask(t)}
               onOpenProgressModal={(t) => setProgressTask(t)}
               onRefresh={() => refreshProfile()}
+            />
+          )}
+
+          {activeTab === 'staff-summary' && (
+            <StaffSummaryPage
+              users={users}
+              tasks={tasks}
+              currentUserProfile={userProfile}
+              onSelectTask={(t) => setSelectedTask(t)}
+              onOpenProgressModal={(t) => setProgressTask(t)}
             />
           )}
 
@@ -368,6 +384,8 @@ function MainApp() {
           {activeTab === 'notifications' && (
             <NotificationsPage onNavigateTask={() => handleSelectTab('tasks')} />
           )}
+
+          {activeTab === 'guide' && <UserGuidePage />}
         </div>
       </main>
 

@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -149,4 +150,50 @@ export async function convertDecisionToTask(
   );
 
   return taskId;
+}
+
+export async function updateMeeting(
+  meetingId: string,
+  updates: Partial<Meeting>
+): Promise<void> {
+  const path = `meetings/${meetingId}`;
+  try {
+    await updateDoc(doc(db, 'meetings', meetingId), updates);
+    await logAuditEvent('UPDATE_NOTULENSI_RAPAT', `Notulensi rapat ${meetingId} diperbarui`, 'Meeting', meetingId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteMeeting(meetingId: string): Promise<void> {
+  const path = `meetings/${meetingId}`;
+  try {
+    await deleteDoc(doc(db, 'meetings', meetingId));
+    await logAuditEvent('HAPUS_NOTULENSI_RAPAT', `Notulensi rapat ${meetingId} dihapus`, 'Meeting', meetingId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+export async function updateDecision(
+  decisionId: string,
+  updates: Partial<Decision>
+): Promise<void> {
+  const path = `decisions/${decisionId}`;
+  try {
+    await updateDoc(doc(db, 'decisions', decisionId), updates);
+    await logAuditEvent('UPDATE_KEPUTUSAN_RAPAT', `Keputusan rapat ${decisionId} diperbarui`, 'Decision', decisionId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteDecision(decisionId: string): Promise<void> {
+  const path = `decisions/${decisionId}`;
+  try {
+    await deleteDoc(doc(db, 'decisions', decisionId));
+    await logAuditEvent('HAPUS_KEPUTUSAN_RAPAT', `Keputusan rapat ${decisionId} dihapus`, 'Decision', decisionId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 }

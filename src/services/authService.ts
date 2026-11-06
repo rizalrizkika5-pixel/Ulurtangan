@@ -10,6 +10,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   getDocs,
   query,
@@ -269,4 +270,14 @@ export async function logoutUser(): Promise<void> {
     await logAuditEvent('LOGOUT_USER', `Pengguna keluar dari sistem`, 'User', user.uid);
   }
   await signOut(auth);
+}
+
+export async function deleteUserAccount(userId: string): Promise<void> {
+  const path = `${USERS_PATH}/${userId}`;
+  try {
+    await deleteDoc(doc(db, USERS_PATH, userId));
+    await logAuditEvent('HAPUS_PENGGUNA', `Akun pengguna ${userId} dihapus oleh Super Admin`, 'User', userId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
 }

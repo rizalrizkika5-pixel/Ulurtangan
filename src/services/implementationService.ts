@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -73,7 +74,18 @@ export async function updateImplementation(
   const path = `${COLLECTION_PATH}/${id}`;
   try {
     await updateDoc(doc(db, COLLECTION_PATH, id), updates);
+    await logAuditEvent('UPDATE_IMPLEMENTASI', `Implementasi kegiatan ${id} diperbarui`, 'Implementation', id);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteImplementation(id: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${id}`;
+  try {
+    await deleteDoc(doc(db, COLLECTION_PATH, id));
+    await logAuditEvent('HAPUS_IMPLEMENTASI', `Implementasi kegiatan ${id} dihapus`, 'Implementation', id);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Budget, Expenditure, Campaign, UserProfile } from '../types';
 import { formatIDR, formatDateID } from '../utils/formatters';
-import { subscribeBudgets, subscribeExpenditures, createBudget, createExpenditure, approveExpenditure } from '../services/budgetService';
+import {
+  subscribeBudgets,
+  subscribeExpenditures,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+  createExpenditure,
+  updateExpenditure,
+  deleteExpenditure,
+  approveExpenditure,
+} from '../services/budgetService';
 import { Modal } from '../components/common/Modal';
 import {
   FileSpreadsheet,
@@ -12,6 +22,8 @@ import {
   AlertTriangle,
   TrendingDown,
   DollarSign,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
@@ -26,12 +38,14 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
   const [showExpModal, setShowExpModal] = useState(false);
 
   // Budget form states
+  const [budgetToEdit, setBudgetToEdit] = useState<Budget | null>(null);
   const [campaignId, setCampaignId] = useState('');
   const [budgetCode, setBudgetCode] = useState('POS-01');
   const [category, setCategory] = useState('');
   const [approvedAmount, setApprovedAmount] = useState<number>(10000000);
 
   // Expenditure form states
+  const [expToEdit, setExpToEdit] = useState<Expenditure | null>(null);
   const [expBudgetId, setExpBudgetId] = useState('');
   const [expDescription, setExpDescription] = useState('');
   const [expAmount, setExpAmount] = useState<number>(1000000);
@@ -51,26 +65,93 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
     };
   }, []);
 
+  const handleOpenCreateBudget = () => {
+    setBudgetToEdit(null);
+    setCampaignId('');
+    setBudgetCode(`POS-0${budgets.length + 1}`);
+    setCategory('');
+    setApprovedAmount(0);
+    setShowBudgetModal(true);
+  };
+
+  const handleOpenEditBudget = (b: Budget) => {
+    setBudgetToEdit(b);
+    setCampaignId(b.campaignId);
+    setBudgetCode(b.budgetCode);
+    setCategory(b.category);
+    setApprovedAmount(b.approvedAmount);
+    setShowBudgetModal(true);
+  };
+
+  const handleDeleteBudget = async (bId: string) => {
+    const confirm = window.confirm('Apakah Anda yakin ingin menghapus pos anggaran ini?');
+    if (!confirm) return;
+    try {
+      await deleteBudget(bId);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus pos anggaran');
+    }
+  };
+
   const handleCreateBudget = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category.trim() || !campaignId) return;
     const selCamp = campaigns.find((c) => c.id === campaignId);
 
     try {
-      await createBudget({
-        campaignId,
-        campaignTitle: selCamp?.title,
-        budgetCode,
-        category: category.trim(),
-        approvedAmount: Number(approvedAmount),
-        picId: currentUserProfile?.uid || 'ADMIN',
-        picName: currentUserProfile?.fullName || 'Pengelola Anggaran',
-        status: 'DISETUJUI',
-      });
+      if (budgetToEdit) {
+        await updateBudget(budgetToEdit.id, {
+          campaignId,
+          campaignTitle: selCamp?.title,
+          budgetCode,
+          category: category.trim(),
+          approvedAmount: Number(approvedAmount),
+        });
+      } else {
+        await createBudget({
+          campaignId,
+          campaignTitle: selCamp?.title,
+          budgetCode,
+          category: category.trim(),
+          approvedAmount: Number(approvedAmount),
+          picId: currentUserProfile?.uid || 'ADMIN',
+          picName: currentUserProfile?.fullName || 'Pengelola Anggaran',
+          status: 'DISETUJUI',
+        });
+      }
       setShowBudgetModal(false);
+      setBudgetToEdit(null);
       setCategory('');
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleOpenCreateExp = () => {
+    setExpToEdit(null);
+    setExpBudgetId(budgets[0]?.id || '');
+    setExpDescription('');
+    setExpAmount(0);
+    setExpProofUrl('');
+    setShowExpModal(true);
+  };
+
+  const handleOpenEditExp = (exp: Expenditure) => {
+    setExpToEdit(exp);
+    setExpBudgetId(exp.budgetId);
+    setExpDescription(exp.description);
+    setExpAmount(exp.amount);
+    setExpProofUrl(exp.proofUrl || '');
+    setShowExpModal(true);
+  };
+
+  const handleDeleteExp = async (expId: string) => {
+    const confirm = window.confirm('Apakah Anda yakin ingin menghapus pengeluaran ini? Realisasi anggaran terkait akan disesuaikan otomatis.');
+    if (!confirm) return;
+    try {
+      await deleteExpenditure(expId);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus pengeluaran');
     }
   };
 
@@ -80,17 +161,28 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
     const selBudget = budgets.find((b) => b.id === expBudgetId);
 
     try {
-      await createExpenditure({
-        budgetId: expBudgetId,
-        campaignId: selBudget?.campaignId || '',
-        description: expDescription.trim(),
-        amount: Number(expAmount),
-        date: new Date().toISOString().split('T')[0],
-        proofUrl: expProofUrl.trim() || undefined,
-        spenderId: currentUserProfile?.uid || 'SPENDER',
-        spenderName: currentUserProfile?.fullName || 'Staf Lapangan',
-      });
+      if (expToEdit) {
+        await updateExpenditure(expToEdit.id, {
+          budgetId: expBudgetId,
+          campaignId: selBudget?.campaignId || '',
+          description: expDescription.trim(),
+          amount: Number(expAmount),
+          proofUrl: expProofUrl.trim() || undefined,
+        });
+      } else {
+        await createExpenditure({
+          budgetId: expBudgetId,
+          campaignId: selBudget?.campaignId || '',
+          description: expDescription.trim(),
+          amount: Number(expAmount),
+          date: new Date().toISOString().split('T')[0],
+          proofUrl: expProofUrl.trim() || undefined,
+          spenderId: currentUserProfile?.uid || 'SPENDER',
+          spenderName: currentUserProfile?.fullName || 'Staf Lapangan',
+        });
+      }
       setShowExpModal(false);
+      setExpToEdit(null);
       setExpDescription('');
     } catch (err) {
       console.error(err);
@@ -125,14 +217,14 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowExpModal(true)}
+            onClick={handleOpenCreateExp}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition"
           >
             + Ajukan Pengeluaran
           </button>
           {isLeaderOrAdmin && (
             <button
-              onClick={() => setShowBudgetModal(true)}
+              onClick={handleOpenCreateBudget}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#173D32] hover:bg-[#245D49] text-white text-xs font-bold rounded-xl transition shadow-xs"
             >
               <Plus className="w-4 h-4" />
@@ -186,12 +278,13 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                 <th className="py-3 px-4">Selisih</th>
                 <th className="py-3 px-4">Serapan %</th>
                 <th className="py-3 px-4 text-center">Status Indikator</th>
+                <th className="py-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {budgets.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-400">
+                  <td colSpan={8} className="py-10 text-center text-slate-400">
                     Belum ada pos anggaran yang dibuat.
                   </td>
                 </tr>
@@ -203,10 +296,6 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                       ? Math.round(((b.realizedAmount || 0) / b.approvedAmount) * 100)
                       : 0;
 
-                  // Indicator rule:
-                  // <= 80%: Sesuai Anggaran (Hijau)
-                  // 81-100%: Mendekati Batas (Kuning)
-                  // > 100%: Melebihi Anggaran (Merah)
                   const isOver = percent > 100;
                   const isNear = percent > 80 && percent <= 100;
 
@@ -245,6 +334,26 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                             ? 'Mendekati Batas'
                             : 'Sesuai Anggaran'}
                         </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleOpenEditBudget(b)}
+                            className="p-1 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-slate-100 transition"
+                            title="Edit Pos Anggaran"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          {isLeaderOrAdmin && (
+                            <button
+                              onClick={() => handleDeleteBudget(b.id)}
+                              className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                              title="Hapus Pos Anggaran"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -314,6 +423,23 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                       </button>
                     </div>
                   )}
+
+                  <div className="flex items-center gap-1 ml-1">
+                    <button
+                      onClick={() => handleOpenEditExp(exp)}
+                      className="p-1 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-slate-100 transition"
+                      title="Edit Pengeluaran"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteExp(exp.id)}
+                      className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                      title="Hapus Pengeluaran"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -321,12 +447,15 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
         </div>
       </div>
 
-      {/* Create Budget Modal */}
+      {/* Create / Edit Budget Modal */}
       {showBudgetModal && (
         <Modal
           isOpen={showBudgetModal}
-          onClose={() => setShowBudgetModal(false)}
-          title="Tambah Pos Anggaran Kegiatan"
+          onClose={() => {
+            setShowBudgetModal(false);
+            setBudgetToEdit(null);
+          }}
+          title={budgetToEdit ? 'Edit Pos Anggaran Kegiatan' : 'Tambah Pos Anggaran Kegiatan'}
           subtitle="Tentukan plafon anggaran yang disetujui untuk pos belanja"
           maxWidth="md"
         >
@@ -362,12 +491,12 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                 <label className="block font-bold text-slate-700 mb-1">Anggaran Disetujui (Rupiah) *</label>
                 <input
                   type="number"
-                  min="100000"
-                  step="500000"
+                  min="0"
+                  step="any"
                   required
                   value={approvedAmount}
                   onChange={(e) => setApprovedAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-mono"
                 />
               </div>
             </div>
@@ -387,7 +516,10 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
             <div className="flex justify-end gap-2 pt-3">
               <button
                 type="button"
-                onClick={() => setShowBudgetModal(false)}
+                onClick={() => {
+                  setShowBudgetModal(false);
+                  setBudgetToEdit(null);
+                }}
                 className="px-4 py-2 text-slate-600 rounded-xl"
               >
                 Batal
@@ -396,19 +528,22 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                 type="submit"
                 className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl"
               >
-                Simpan Pos Anggaran
+                {budgetToEdit ? 'Simpan Perubahan' : 'Simpan Pos Anggaran'}
               </button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Log Expenditure Modal */}
+      {/* Log / Edit Expenditure Modal */}
       {showExpModal && (
         <Modal
           isOpen={showExpModal}
-          onClose={() => setShowExpModal(false)}
-          title="Ajukan Realisasi Pengeluaran"
+          onClose={() => {
+            setShowExpModal(false);
+            setExpToEdit(null);
+          }}
+          title={expToEdit ? 'Edit Realisasi Pengeluaran' : 'Ajukan Realisasi Pengeluaran'}
           subtitle="Catat pengeluaran riil belanja kegiatan beserta bukti SPJ"
           maxWidth="md"
         >
@@ -434,12 +569,12 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
               <label className="block font-bold text-slate-700 mb-1">Nominal Biaya Riil (Rupiah) *</label>
               <input
                 type="number"
-                min="1000"
-                step="50000"
+                min="0"
+                step="any"
                 required
                 value={expAmount}
                 onChange={(e) => setExpAmount(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl font-mono"
               />
             </div>
 
@@ -469,7 +604,10 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
             <div className="flex justify-end gap-2 pt-3">
               <button
                 type="button"
-                onClick={() => setShowExpModal(false)}
+                onClick={() => {
+                  setShowExpModal(false);
+                  setExpToEdit(null);
+                }}
                 className="px-4 py-2 text-slate-600 rounded-xl"
               >
                 Batal
@@ -478,7 +616,7 @@ export const BudgetPage: React.FC<Props> = ({ campaigns, currentUserProfile }) =
                 type="submit"
                 className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl"
               >
-                Ajukan Pengeluaran
+                {expToEdit ? 'Simpan Perubahan' : 'Ajukan Pengeluaran'}
               </button>
             </div>
           </form>

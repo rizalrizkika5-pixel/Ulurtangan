@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -85,5 +86,28 @@ export async function updateContentStatus(
     );
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function updateContentItem(
+  contentId: string,
+  updates: Partial<ContentItem>
+): Promise<void> {
+  const path = `${COLLECTION_PATH}/${contentId}`;
+  try {
+    await updateDoc(doc(db, COLLECTION_PATH, contentId), updates);
+    await logAuditEvent('UPDATE_KONTEN', `Item konten ${contentId} diperbarui`, 'Content', contentId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteContentItem(contentId: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${contentId}`;
+  try {
+    await deleteDoc(doc(db, COLLECTION_PATH, contentId));
+    await logAuditEvent('HAPUS_KONTEN', `Item konten ${contentId} dihapus`, 'Content', contentId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

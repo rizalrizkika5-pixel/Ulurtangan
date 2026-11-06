@@ -5,6 +5,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -90,6 +91,66 @@ export async function createBudget(
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, collectionPath);
+  }
+}
+
+export async function updateBudget(
+  budgetId: string,
+  updates: Partial<Budget>
+): Promise<void> {
+  const path = `budgets/${budgetId}`;
+  try {
+    await updateDoc(doc(db, 'budgets', budgetId), updates);
+    await logAuditEvent('UPDATE_POS_ANGGARAN', `Pos anggaran ${budgetId} diperbarui`, 'Budget', budgetId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteBudget(budgetId: string): Promise<void> {
+  const path = `budgets/${budgetId}`;
+  try {
+    await deleteDoc(doc(db, 'budgets', budgetId));
+    await logAuditEvent('HAPUS_POS_ANGGARAN', `Pos anggaran ${budgetId} dihapus`, 'Budget', budgetId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+export async function updateExpenditure(
+  expenditureId: string,
+  updates: Partial<Expenditure>
+): Promise<void> {
+  const path = `expenditures/${expenditureId}`;
+  try {
+    await updateDoc(doc(db, 'expenditures', expenditureId), updates);
+    await logAuditEvent('UPDATE_PENGELUARAN', `Pengeluaran ${expenditureId} diperbarui`, 'Expenditure', expenditureId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteExpenditure(expenditureId: string): Promise<void> {
+  const path = `expenditures/${expenditureId}`;
+  try {
+    const expDoc = await getDoc(doc(db, 'expenditures', expenditureId));
+    if (expDoc.exists()) {
+      const data = expDoc.data() as Expenditure;
+      // If was approved, rollback budget realizedAmount
+      if (data.status === 'DISETUJUI' && data.budgetId) {
+        try {
+          await updateDoc(doc(db, 'budgets', data.budgetId), {
+            realizedAmount: increment(-data.amount),
+          });
+        } catch (e) {
+          console.warn('Rollback budget error:', e);
+        }
+      }
+    }
+    await deleteDoc(doc(db, 'expenditures', expenditureId));
+    await logAuditEvent('HAPUS_PENGELUARAN', `Pengeluaran ${expenditureId} dihapus`, 'Expenditure', expenditureId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 

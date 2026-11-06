@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Implementation, Campaign, UserProfile } from '../types';
-import { subscribeImplementations, createImplementation, updateImplementation } from '../services/implementationService';
+import {
+  subscribeImplementations,
+  createImplementation,
+  updateImplementation,
+  deleteImplementation,
+} from '../services/implementationService';
 import { Modal } from '../components/common/Modal';
 import { formatIDR, formatDateID } from '../utils/formatters';
 import {
@@ -12,6 +17,8 @@ import {
   CheckSquare,
   AlertCircle,
   ExternalLink,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
@@ -32,6 +39,7 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
     day: '2-digit',
   }).format(new Date());
 
+  const [implementationToEdit, setImplementationToEdit] = useState<Implementation | null>(null);
   const [campaignId, setCampaignId] = useState('');
   const [activityTitle, setActivityTitle] = useState('');
   const [date, setDate] = useState(todayStr);
@@ -46,45 +54,98 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
     return () => unsub();
   }, []);
 
+  const handleOpenCreate = () => {
+    setImplementationToEdit(null);
+    setCampaignId('');
+    setActivityTitle('');
+    setDate(todayStr);
+    setLocation('');
+    setPartner('');
+    setTargetBeneficiaries(0);
+    setBudgetApproved(0);
+    setOutputSummary('');
+    setShowCreateModal(true);
+  };
+
+  const handleOpenEdit = (imp: Implementation) => {
+    setImplementationToEdit(imp);
+    setCampaignId(imp.campaignId);
+    setActivityTitle(imp.activityTitle);
+    setDate(imp.date);
+    setLocation(imp.location);
+    setPartner(imp.partner || '');
+    setTargetBeneficiaries(imp.targetBeneficiaries);
+    setBudgetApproved(imp.budgetApproved);
+    setOutputSummary(imp.outputSummary || '');
+    setSelectedItem(null);
+    setShowCreateModal(true);
+  };
+
+  const handleDelete = async (impId: string) => {
+    const confirm = window.confirm('Apakah Anda yakin ingin menghapus agenda pelaksanaan lapangan ini?');
+    if (!confirm) return;
+    try {
+      await deleteImplementation(impId);
+      setSelectedItem(null);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus pelaksanaan');
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activityTitle.trim() || !campaignId) return;
     const selCamp = campaigns.find((c) => c.id === campaignId);
 
     try {
-      await createImplementation({
-        campaignId,
-        campaignTitle: selCamp?.title,
-        activityTitle: activityTitle.trim(),
-        date,
-        location: location.trim(),
-        partner: partner.trim() || undefined,
-        fieldPicName: currentUserProfile?.fullName || 'PIC Lapangan',
-        targetBeneficiaries: Number(targetBeneficiaries),
-        actualBeneficiaries: 0,
-        budgetApproved: Number(budgetApproved),
-        actualCost: 0,
-        outputSummary: outputSummary.trim(),
-        preChecklist: {
-          proposalApproved: true,
-          fundsReady: true,
-          partnerVerified: true,
-          locationReady: true,
-          beneficiariesVerified: true,
-          teamReady: true,
-          documentationPrepared: true,
-        },
-        postChecklist: {
-          activityExecuted: false,
-          beneficiariesRecorded: false,
-          handoverProofAvailable: false,
-          documentationComplete: false,
-          actualCostsLogged: false,
-          reportFinished: false,
-        },
-        status: 'PERSIAPAN',
-      });
+      if (implementationToEdit) {
+        await updateImplementation(implementationToEdit.id, {
+          campaignId,
+          campaignTitle: selCamp?.title,
+          activityTitle: activityTitle.trim(),
+          date,
+          location: location.trim(),
+          partner: partner.trim() || undefined,
+          targetBeneficiaries: Number(targetBeneficiaries),
+          budgetApproved: Number(budgetApproved),
+          outputSummary: outputSummary.trim(),
+        });
+      } else {
+        await createImplementation({
+          campaignId,
+          campaignTitle: selCamp?.title,
+          activityTitle: activityTitle.trim(),
+          date,
+          location: location.trim(),
+          partner: partner.trim() || undefined,
+          fieldPicName: currentUserProfile?.fullName || 'PIC Lapangan',
+          targetBeneficiaries: Number(targetBeneficiaries),
+          actualBeneficiaries: 0,
+          budgetApproved: Number(budgetApproved),
+          actualCost: 0,
+          outputSummary: outputSummary.trim(),
+          preChecklist: {
+            proposalApproved: true,
+            fundsReady: true,
+            partnerVerified: true,
+            locationReady: true,
+            beneficiariesVerified: true,
+            teamReady: true,
+            documentationPrepared: true,
+          },
+          postChecklist: {
+            activityExecuted: false,
+            beneficiariesRecorded: false,
+            handoverProofAvailable: false,
+            documentationComplete: false,
+            actualCostsLogged: false,
+            reportFinished: false,
+          },
+          status: 'PERSIAPAN',
+        });
+      }
       setShowCreateModal(false);
+      setImplementationToEdit(null);
       setActivityTitle('');
       setLocation('');
       setOutputSummary('');
@@ -143,7 +204,7 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
         </div>
 
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleOpenCreate}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-[#173D32] hover:bg-[#245D49] text-white text-xs font-bold rounded-xl transition shadow-xs"
         >
           <Plus className="w-4 h-4" />
@@ -172,9 +233,27 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-mono text-[10px] text-slate-400 font-bold">{imp.implementationId}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      {imp.status}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        {imp.status}
+                      </span>
+                      <div className="flex items-center gap-0.5 ml-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => handleOpenEdit(imp)}
+                          className="p-1 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-slate-100 transition"
+                          title="Edit Agenda"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(imp.id)}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                          title="Hapus Agenda"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <h3 className="font-bold text-slate-900 text-sm line-clamp-2 leading-snug">
@@ -223,6 +302,29 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
           maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
+            {/* Header Action Bar */}
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="font-bold text-slate-700">Tindakan Kelola:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(selectedItem)}
+                  className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Edit Data</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(selectedItem.id)}
+                  className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Hapus</span>
+                </button>
+              </div>
+            </div>
+
             {/* Output Summary */}
             {selectedItem.outputSummary && (
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -311,13 +413,16 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
         </Modal>
       )}
 
-      {/* Create Modal */}
+      {/* Create / Edit Modal */}
       {showCreateModal && (
         <Modal
           isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Rencana Pelaksanaan Lapangan Baru"
-          subtitle="Jadwalkan kegiatan operasional dan siapkan checklist mutu"
+          onClose={() => {
+            setShowCreateModal(false);
+            setImplementationToEdit(null);
+          }}
+          title={implementationToEdit ? 'Edit Pelaksanaan Lapangan' : 'Rencana Pelaksanaan Lapangan Baru'}
+          subtitle={implementationToEdit ? `ID: ${implementationToEdit.implementationId}` : 'Jadwalkan kegiatan operasional dan siapkan checklist mutu'}
           maxWidth="md"
         >
           <form onSubmit={handleCreate} className="space-y-3 text-xs">
@@ -379,7 +484,8 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
                 <label className="block font-bold text-slate-700 mb-1">Target Mustahik</label>
                 <input
                   type="number"
-                  min="1"
+                  min="0"
+                  step="any"
                   value={targetBeneficiaries}
                   onChange={(e) => setTargetBeneficiaries(Number(e.target.value))}
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl"
@@ -411,7 +517,10 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
             <div className="flex justify-end gap-2 pt-3">
               <button
                 type="button"
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setImplementationToEdit(null);
+                }}
                 className="px-4 py-2 text-slate-600 rounded-xl"
               >
                 Batal
@@ -420,7 +529,7 @@ export const ImplementationPage: React.FC<Props> = ({ campaigns, currentUserProf
                 type="submit"
                 className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl"
               >
-                Simpan Agenda
+                {implementationToEdit ? 'Simpan Perubahan' : 'Simpan Agenda'}
               </button>
             </div>
           </form>

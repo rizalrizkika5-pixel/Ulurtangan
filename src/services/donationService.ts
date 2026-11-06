@@ -5,6 +5,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -138,5 +139,93 @@ export async function markThankYouSent(donationId: string): Promise<void> {
     await updateDoc(doc(db, COLLECTION_PATH, donationId), { thankYouSent: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_PATH}/${donationId}`);
+  }
+}
+
+export async function updateDonation(
+  donationId: string,
+  updates: Partial<Donation>
+): Promise<void> {
+  const path = `${COLLECTION_PATH}/${donationId}`;
+  try {
+    const currentDoc = await getDoc(doc(db, COLLECTION_PATH, donationId));
+    if (!currentDoc.exists()) throw new Error('Data donasi tidak ditemukan');
+    const oldData = currentDoc.data() as Donation;
+
+    await updateDoc(doc(db, COLLECTION_PATH, donationId), updates);
+
+    // If amount changed and transaction was verified, adjust campaign and donor balances
+    if (oldData.status === 'TERVERIFIKASI' && updates.amount !== undefined && updates.amount !== oldData.amount) {
+      const diff = updates.amount - oldData.amount;
+      if (oldData.campaignId) {
+        try {
+          await updateDoc(doc(db, 'campaigns', oldData.campaignId), {
+            collectedAmount: increment(diff),
+          });
+        } catch (e) {
+          console.warn('Sync campaign error:', e);
+        }
+      }
+      if (oldData.donorId) {
+        try {
+          await updateDoc(doc(db, 'donors', oldData.donorId), {
+            totalDonations: increment(diff),
+          });
+        } catch (e) {
+          console.warn('Sync donor error:', e);
+        }
+      }
+    }
+
+    await logAuditEvent(
+      'UPDATE_TRANSAKSI_DONASI',
+      `Transaksi ${oldData.donationId} diperbarui datanya`,
+      'Donation',
+      donationId
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteDonation(donationId: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${donationId}`;
+  try {
+    const currentDoc = await getDoc(doc(db, COLLECTION_PATH, donationId));
+    if (!currentDoc.exists()) return;
+    const data = currentDoc.data() as Donation;
+
+    // If was verified, rollback campaign and donor amounts
+    if (data.status === 'TERVERIFIKASI') {
+      if (data.campaignId) {
+        try {
+          await updateDoc(doc(db, 'campaigns', data.campaignId), {
+            collectedAmount: increment(-data.amount),
+          });
+        } catch (e) {
+          console.warn('Rollback campaign error:', e);
+        }
+      }
+      if (data.donorId) {
+        try {
+          await updateDoc(doc(db, 'donors', data.donorId), {
+            totalDonations: increment(-data.amount),
+            donationCount: increment(-1),
+          });
+        } catch (e) {
+          console.warn('Rollback donor error:', e);
+        }
+      }
+    }
+
+    await deleteDoc(doc(db, COLLECTION_PATH, donationId));
+    await logAuditEvent(
+      'HAPUS_TRANSAKSI_DONASI',
+      `Transaksi ${data.donationId} (Rp ${data.amount.toLocaleString('id-ID')}) dihapus`,
+      'Donation',
+      donationId
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

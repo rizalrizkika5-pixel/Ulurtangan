@@ -21,6 +21,8 @@ import {
   Bell,
   Sparkles,
   X,
+  UserCheck,
+  BookOpen,
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -69,6 +71,7 @@ export const Sidebar: React.FC<Props> = ({
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'tasks', label: 'Manajemen Tugas', icon: CheckSquare },
+        { id: 'staff-summary', label: 'Rangkuman Karyawan', icon: UserCheck },
         { id: 'notifications', label: 'Pemberitahuan', icon: Bell, badge: unreadNotifications },
       ],
     },
@@ -106,6 +109,7 @@ export const Sidebar: React.FC<Props> = ({
           ? [{ id: 'users', label: 'Manajemen Pengguna', icon: Settings }]
           : []),
         { id: 'audit', label: 'Audit Log & Jejak', icon: ShieldAlert },
+        { id: 'guide', label: 'Panduan Penggunaan', icon: BookOpen },
       ],
     },
   ];

@@ -4,6 +4,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -66,6 +67,39 @@ export async function createAssessment(
     return docRef.id;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, COLLECTION_PATH);
+  }
+}
+
+export async function updateAssessment(
+  assessmentId: string,
+  updates: Partial<Assessment>
+): Promise<void> {
+  const path = `${COLLECTION_PATH}/${assessmentId}`;
+  try {
+    await updateDoc(doc(db, COLLECTION_PATH, assessmentId), updates);
+    await logAuditEvent(
+      'UPDATE_ASSESSMENT',
+      `Assessment ${assessmentId} diperbarui datanya`,
+      'Assessment',
+      assessmentId
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteAssessment(assessmentId: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${assessmentId}`;
+  try {
+    await deleteDoc(doc(db, COLLECTION_PATH, assessmentId));
+    await logAuditEvent(
+      'HAPUS_ASSESSMENT',
+      `Assessment ${assessmentId} dihapus`,
+      'Assessment',
+      assessmentId
+    );
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 

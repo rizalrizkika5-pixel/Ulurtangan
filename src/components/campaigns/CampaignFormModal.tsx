@@ -226,12 +226,13 @@ export const CampaignFormModal: React.FC<Props> = ({
             </label>
             <input
               type="number"
-              min="100000"
-              step="500000"
+              min="0"
+              step="any"
               required
               value={targetAmount}
               onChange={(e) => setTargetAmount(Number(e.target.value))}
               className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#173D32]"
+              placeholder="0"
             />
           </div>
 

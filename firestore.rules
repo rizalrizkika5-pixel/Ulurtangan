@@ -59,7 +59,7 @@ service cloud.firestore {
         resource.data.picId == request.auth.uid ||
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'progress', 'proofLinks', 'notes', 'obstacles', 'updatedAt'])
       );
-      allow delete: if isSuperAdmin() || (isLeaderOrAdmin() && resource.data.createdById == request.auth.uid);
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin() || (isSignedIn() && resource.data.createdById == request.auth.uid);
     }
 
     // Campaigns collection
@@ -67,21 +67,21 @@ service cloud.firestore {
       allow read: if isSignedIn() && isAccountActive();
       allow create: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'DIVISI_PROGRAM' || getUserData().role == 'DIVISI_FUNDRAISING');
       allow update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'DIVISI_PROGRAM' || getUserData().role == 'DIVISI_FUNDRAISING');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Assessments
     match /assessments/{assessmentId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'DIVISI_PROGRAM');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Donors (CRM)
     match /donors/{donorId} {
       allow read: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'ADMIN_CRM' || getUserData().role == 'DIVISI_FUNDRAISING');
       allow create, update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'ADMIN_CRM' || getUserData().role == 'DIVISI_FUNDRAISING');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Donations
@@ -89,34 +89,34 @@ service cloud.firestore {
       allow read: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'ADMIN_CRM' || getUserData().role == 'DIVISI_FUNDRAISING');
       allow create: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'ADMIN_CRM' || getUserData().role == 'DIVISI_FUNDRAISING');
       allow update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'ADMIN_CRM');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Budgets & Expenditures
     match /budgets/{budgetId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && isLeaderOrAdmin();
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     match /expenditures/{expenditureId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive();
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Implementations
     match /implementations/{implementationId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'DIVISI_PROGRAM');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Content Calendar
     match /contentCalendar/{contentId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && (isLeaderOrAdmin() || getUserData().role == 'KONTEN_KREATOR_VIDEO' || getUserData().role == 'MEDIA_SOSIAL_WEBSITE');
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // Notifications
@@ -131,27 +131,28 @@ service cloud.firestore {
     match /meetings/{meetingId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && isLeaderOrAdmin();
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     match /decisions/{decisionId} {
       allow read: if isSignedIn() && isAccountActive();
       allow create, update: if isSignedIn() && isAccountActive() && isLeaderOrAdmin();
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
     // KPI
     match /kpi/{kpiId} {
       allow read: if isSignedIn() && isAccountActive() && (resource.data.userId == request.auth.uid || isLeaderOrAdmin());
       allow create, update: if isSignedIn() && isAccountActive() && isLeaderOrAdmin();
-      allow delete: if isSuperAdmin();
+      allow delete: if isSuperAdmin() || isLeaderOrAdmin();
     }
 
-    // Audit logs (write only by auth users, no delete or modify)
+    // Audit logs (write by auth users, delete by super admin for reset)
     match /auditLogs/{logId} {
       allow read: if isSignedIn() && isLeaderOrAdmin();
       allow create: if isSignedIn();
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if isSuperAdmin();
     }
   }
 }

@@ -5,6 +5,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   orderBy,
   onSnapshot,
@@ -79,6 +80,16 @@ export async function updateDonor(donorId: string, updates: Partial<Donor>): Pro
     await logAuditEvent('UPDATE_DONATUR', `Data donatur ${donorId} diperbarui`, 'Donor', donorId);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteDonor(donorId: string): Promise<void> {
+  const path = `${COLLECTION_PATH}/${donorId}`;
+  try {
+    await deleteDoc(doc(db, COLLECTION_PATH, donorId));
+    await logAuditEvent('HAPUS_DONATUR', `Donatur ${donorId} dihapus`, 'Donor', donorId);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 

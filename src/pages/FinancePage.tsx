@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Donation, FundType, DonationStatus, Campaign, Donor, UserProfile } from '../types';
 import { formatIDR, formatDateID } from '../utils/formatters';
 import { StatusBadge } from '../components/common/StatusBadge';
-import { createDonation, verifyDonation } from '../services/donationService';
+import { createDonation, verifyDonation, updateDonation, deleteDonation } from '../services/donationService';
 import { Modal } from '../components/common/Modal';
 import {
   Coins,
@@ -14,6 +14,8 @@ import {
   AlertCircle,
   ShieldCheck,
   TrendingUp,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
@@ -45,6 +47,7 @@ export const FinancePage: React.FC<Props> = ({
     day: '2-digit',
   }).format(new Date());
 
+  const [donationToEdit, setDonationToEdit] = useState<Donation | null>(null);
   const [date, setDate] = useState(todayStr);
   const [donorId, setDonorId] = useState('');
   const [campaignId, setCampaignId] = useState('');
@@ -64,32 +67,89 @@ export const FinancePage: React.FC<Props> = ({
     currentUserProfile?.role === 'PIMPINAN' ||
     currentUserProfile?.role === 'KOORDINATOR_OPERASIONAL';
 
+  const handleOpenCreate = () => {
+    setDonationToEdit(null);
+    setDate(todayStr);
+    setDonorId('');
+    setCampaignId('');
+    setFundType('INFAK');
+    setPaymentMethod('Transfer Bank Syariah (BSI)');
+    setAmount(0);
+    setProofUrl('');
+    setNotes('');
+    setShowCreateModal(true);
+  };
+
+  const handleOpenEdit = (d: Donation) => {
+    setDonationToEdit(d);
+    setDate(d.date);
+    setDonorId(d.donorId === 'ANONYMOUS' ? '' : d.donorId);
+    setCampaignId(d.campaignId || '');
+    setFundType(d.fundType);
+    setPaymentMethod(d.paymentMethod);
+    setAmount(d.amount);
+    setProofUrl(d.proofUrl || '');
+    setNotes(d.notes || '');
+    setSelectedDonation(null);
+    setShowCreateModal(true);
+  };
+
+  const handleDelete = async (donationId: string) => {
+    const confirm = window.confirm(
+      'Apakah Anda yakin ingin menghapus transaksi ini? Jika transaksi sudah diverifikasi, saldo campaign dan donatur akan disesuaikan otomatis.'
+    );
+    if (!confirm) return;
+    try {
+      await deleteDonation(donationId);
+      onRefresh();
+      setSelectedDonation(null);
+    } catch (err: any) {
+      alert(err.message || 'Gagal menghapus donasi');
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount <= 0) return;
+    if (amount < 0) return;
     setLoading(true);
 
     const selDonor = donors.find((d) => d.id === donorId);
     const selCampaign = campaigns.find((c) => c.id === campaignId);
 
     try {
-      await createDonation({
-        date,
-        donorId: donorId || 'ANONYMOUS',
-        donorName: selDonor?.name || 'Hamba Allah (Anonim)',
-        campaignId: campaignId || undefined,
-        campaignTitle: selCampaign?.title || undefined,
-        fundType,
-        paymentMethod,
-        amount: Number(amount),
-        proofUrl: proofUrl.trim() || undefined,
-        recorderId: currentUserProfile?.uid || 'RECORDER',
-        recorderName: currentUserProfile?.fullName || 'Admin CRM',
-        notes: notes.trim(),
-      });
+      if (donationToEdit) {
+        await updateDonation(donationToEdit.id, {
+          date,
+          donorId: donorId || 'ANONYMOUS',
+          donorName: selDonor?.name || 'Hamba Allah (Anonim)',
+          campaignId: campaignId || undefined,
+          campaignTitle: selCampaign?.title || undefined,
+          fundType,
+          paymentMethod,
+          amount: Number(amount),
+          proofUrl: proofUrl.trim() || undefined,
+          notes: notes.trim(),
+        });
+      } else {
+        await createDonation({
+          date,
+          donorId: donorId || 'ANONYMOUS',
+          donorName: selDonor?.name || 'Hamba Allah (Anonim)',
+          campaignId: campaignId || undefined,
+          campaignTitle: selCampaign?.title || undefined,
+          fundType,
+          paymentMethod,
+          amount: Number(amount),
+          proofUrl: proofUrl.trim() || undefined,
+          recorderId: currentUserProfile?.uid || 'RECORDER',
+          recorderName: currentUserProfile?.fullName || 'Admin CRM',
+          notes: notes.trim(),
+        });
+      }
       onRefresh();
       setShowCreateModal(false);
-      setAmount(500000);
+      setDonationToEdit(null);
+      setAmount(0);
       setNotes('');
       setProofUrl('');
     } catch (err) {
@@ -149,7 +209,7 @@ export const FinancePage: React.FC<Props> = ({
         </div>
 
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleOpenCreate}
           className="flex items-center gap-1.5 px-3.5 py-2 bg-[#173D32] hover:bg-[#245D49] text-white text-xs font-bold rounded-xl transition shadow-xs"
         >
           <Plus className="w-4 h-4" />
@@ -274,16 +334,31 @@ export const FinancePage: React.FC<Props> = ({
                       <StatusBadge status={d.status} type="donation" />
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDonation(d);
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
-                      >
-                        Detail
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDonation(d)}
+                          className="px-2 py-1 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"
+                        >
+                          Detail
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(d)}
+                          className="p-1 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-slate-100 transition"
+                          title="Edit Transaksi"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(d.id)}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition"
+                          title="Hapus Transaksi"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -356,6 +431,29 @@ export const FinancePage: React.FC<Props> = ({
               </div>
             )}
 
+            {/* Edit / Delete quick action bar */}
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-slate-500 font-medium">Revisi Data Transaksi:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(selectedDonation)}
+                  className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Edit Data</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(selectedDonation.id)}
+                  className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold flex items-center gap-1 transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Hapus</span>
+                </button>
+              </div>
+            </div>
+
             {/* Segregation of duties verification section */}
             {canVerify && selectedDonation.status === 'MENUNGGU_VERIFIKASI' && (
               <div className="p-4 bg-amber-50 rounded-2xl border border-amber-300 space-y-3">
@@ -395,13 +493,16 @@ export const FinancePage: React.FC<Props> = ({
         </Modal>
       )}
 
-      {/* Record Donation Modal */}
+      {/* Record / Edit Donation Modal */}
       {showCreateModal && (
         <Modal
           isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Pencatatan Donasi Masuk"
-          subtitle="Catat donasi yang masuk melalui rekening bank atau kas yayasan"
+          onClose={() => {
+            setShowCreateModal(false);
+            setDonationToEdit(null);
+          }}
+          title={donationToEdit ? 'Edit Catatan Donasi' : 'Pencatatan Donasi Masuk'}
+          subtitle={donationToEdit ? `ID: ${donationToEdit.donationId}` : 'Catat donasi yang masuk melalui rekening bank atau kas yayasan'}
           maxWidth="md"
         >
           <form onSubmit={handleCreate} className="space-y-3 text-xs">
@@ -421,8 +522,8 @@ export const FinancePage: React.FC<Props> = ({
                 <input
                   type="number"
                   required
-                  min="1000"
-                  step="10000"
+                  min="0"
+                  step="any"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl font-mono"
@@ -510,7 +611,10 @@ export const FinancePage: React.FC<Props> = ({
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setDonationToEdit(null);
+                }}
                 className="px-4 py-2 text-slate-600 rounded-xl font-semibold"
               >
                 Batal
@@ -520,7 +624,7 @@ export const FinancePage: React.FC<Props> = ({
                 disabled={loading}
                 className="px-4 py-2 bg-[#173D32] hover:bg-[#245D49] text-white font-bold rounded-xl transition"
               >
-                {loading ? 'Menyimpan...' : 'Simpan Transaksi'}
+                {loading ? 'Menyimpan...' : donationToEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
               </button>
             </div>
           </form>
